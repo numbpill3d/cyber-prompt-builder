@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 199 89% 48%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -25,7 +25,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 199 89% 48%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -33,18 +33,18 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 199 89% 48%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 199 89% 48%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 199 89% 48%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 199 89% 48%;
   }
 
   .dark {
@@ -93,21 +93,21 @@
   }
 
   body {
-    @apply bg-cyber-black text-cyber-silver;
+    @apply bg-cyber-ice-blue text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   .glassmorphism {
-    @apply bg-opacity-20 backdrop-filter backdrop-blur-sm border border-cyber-silver border-opacity-20;
+    @apply bg-white bg-opacity-20 backdrop-filter backdrop-blur-sm border border-white border-opacity-20;
   }
 
   .cyberborder {
-    @apply border-[1px] border-cyber-silver relative;
+    @apply border-[1px] border-cyber-bright-blue relative shadow-md;
   }
 
   .cyberborder::before, .cyberborder::after {
     content: '';
-    @apply absolute w-[6px] h-[6px] border-cyber-green z-10;
+    @apply absolute w-[6px] h-[6px] border-cyber-bright-blue z-10;
   }
   
   .cyberborder::before {
@@ -119,20 +119,38 @@
   }
 
   .scanline {
-    @apply pointer-events-none absolute inset-0 overflow-hidden opacity-20;
+    @apply pointer-events-none absolute inset-0 overflow-hidden opacity-10;
   }
   
   .scanline::before {
     content: '';
-    @apply absolute top-0 left-0 w-full h-[1px] bg-cyber-green animate-scanline;
+    @apply absolute top-0 left-0 w-full h-[1px] bg-cyber-bright-blue animate-scanline;
   }
 
   .chrome-gradient {
-    background: linear-gradient(135deg, #717171 0%, #c0c0c0 50%, #717171 100%);
+    background: linear-gradient(135deg, #F3F3F3 0%, #c0c0c0 50%, #F3F3F3 100%);
   }
   
   .terminal-text {
-    @apply font-mono text-cyber-green;
+    @apply font-mono text-cyber-bright-blue;
+  }
+  
+  .ice-card {
+    @apply bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm border border-cyber-bright-blue border-opacity-30 rounded-lg shadow-lg;
+  }
+  
+  .shimmer-effect {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_10px_rgba(30,174,219,0.6)];
   }
 }
 
@@ -142,19 +160,19 @@
   }
   
   .neon-border {
-    @apply border-2 border-cyber-cyan shadow-[0_0_5px_theme(colors.cyber.cyan),0_0_10px_theme(colors.cyber.cyan)];
+    @apply border-2 border-cyber-bright-blue shadow-[0_0_5px_theme(colors.cyber.bright-blue),0_0_10px_theme(colors.cyber.bright-blue)];
   }
   
   .cyber-button {
-    @apply relative overflow-hidden bg-gradient-to-r from-cyber-purple to-cyber-deep-purple 
+    @apply relative overflow-hidden bg-gradient-to-r from-cyber-bright-blue to-cyber-sky-blue 
       text-white font-orbitron font-bold py-2 px-4 border-l-2 border-t-2 border-r-2 border-b-2 
-      border-cyber-white shadow-[inset_0_0_10px_rgba(0,255,65,0.5)] 
-      hover:shadow-[inset_0_0_20px_rgba(0,255,65,0.8)] transition-all duration-300;
+      border-cyber-white shadow-[inset_0_0_10px_rgba(0,195,240,0.5)] 
+      hover:shadow-[inset_0_0_20px_rgba(0,195,240,0.8)] transition-all duration-300;
   }
   
   .cyber-button::before {
     content: '';
-    @apply absolute top-0 left-0 w-full h-full bg-cyber-green opacity-0 
+    @apply absolute top-0 left-0 w-full h-full bg-cyber-bright-blue opacity-0 
       hover:opacity-20 transition-opacity duration-300;
   }
   
@@ -168,12 +186,12 @@
   }
   
   .glitch-effect::before {
-    @apply left-[2px] text-cyber-cyan animate-pulse;
+    @apply left-[2px] text-cyber-bright-blue animate-pulse;
     clip: rect(24px, 550px, 90px, 0);
   }
   
   .glitch-effect::after {
-    @apply left-[-2px] text-cyber-green animate-pulse;
+    @apply left-[-2px] text-cyber-bright-blue animate-pulse;
     clip: rect(85px, 550px, 140px, 0);
   }
 }

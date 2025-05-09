@@ -20,25 +20,25 @@ const PromptInput: React.FC<PromptInputProps> = ({ className, onGenerate }) => {
   return (
     <div className={cn("w-full", className)}>
       <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-        <div className="w-full relative cyberborder">
-          <div className="absolute -top-7 left-3 bg-cyber-black px-2 font-orbitron text-cyber-silver text-sm">
-            PROMPT<span className="text-cyber-cyan">:</span>
+        <div className="w-full relative cyberborder ice-card hover-glow">
+          <div className="absolute -top-7 left-3 bg-white px-2 font-orbitron text-cyber-bright-blue text-sm">
+            PROMPT<span className="text-cyber-bright-blue">:</span>
           </div>
           <textarea 
-            className="w-full bg-cyber-black text-cyber-silver p-4 min-h-[120px] resize-none focus:outline-none focus:ring-1 focus:ring-cyber-cyan"
+            className="w-full bg-transparent text-foreground p-4 min-h-[120px] resize-none focus:outline-none focus:ring-1 focus:ring-cyber-bright-blue rounded-lg"
             placeholder="Describe the code you want to generate..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           ></textarea>
           
-          <div className="absolute -bottom-7 right-3 bg-cyber-black px-2 font-mono text-xs text-cyber-silver opacity-70">
-            <span className="text-cyber-green">tokens</span>: {prompt.length}
+          <div className="absolute -bottom-7 right-3 bg-white px-2 font-mono text-xs text-foreground opacity-70">
+            <span className="text-cyber-bright-blue">tokens</span>: {prompt.length}
           </div>
         </div>
         
         <button 
           type="submit"
-          className="cyber-button group"
+          className="cyber-button group hover-lift"
           data-text="GENERATE CODE"
         >
           <span className="relative z-10 text-cyber-glow glitch-effect" data-text="GENERATE CODE">
