@@ -12,6 +12,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ className, code, setCode }) => 
   const lineCount = code.split('\n').length || 1;
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code);
+  };
+
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="chrome-gradient h-8 flex items-center justify-between px-3 rounded-t-lg">
@@ -40,7 +44,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ className, code, setCode }) => 
           </div>
           
           <textarea 
-            className="w-full h-full bg-white bg-opacity-80 font-mono text-sm p-4 resize-none focus:outline-none focus:ring-1 focus:ring-cyber-bright-blue text-foreground rounded-br-lg"
+            className="w-full h-full bg-white bg-opacity-80 font-mono text-sm p-4 resize-none focus:outline-none focus:ring-1 focus:ring-cyber-bright-blue text-cyber-black rounded-br-lg"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="// Generated code will appear here..."
@@ -55,7 +59,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ className, code, setCode }) => 
           <span className="mr-4">col: 0</span>
           <span>UTF-8</span>
         </div>
-        <button className="text-xs hover:text-cyber-bright-blue transition-colors">Copy</button>
+        <button 
+          className="text-xs hover:text-cyber-bright-blue transition-colors"
+          onClick={handleCopyCode}
+        >
+          Copy
+        </button>
       </div>
     </div>
   );

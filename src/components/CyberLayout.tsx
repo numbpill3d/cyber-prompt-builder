@@ -14,19 +14,40 @@ interface CyberLayoutProps {
 const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const [code, setCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedFromPrompt, setGeneratedFromPrompt] = useState('');
 
-  const handleGenerateCode = (prompt: string) => {
+  const handleGenerateCode = async (prompt: string) => {
     setIsGenerating(true);
+    setGeneratedFromPrompt(prompt);
     
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setCode(`// Generated from prompt: "${prompt}"\n\nfunction helloWorld() {\n  console.log("Hello, Cyber World!");\n  return "Code generated successfully";\n}`);
-      setIsGenerating(false);
+    try {
+      // This is a placeholder for the actual API call
+      // In production, replace this with your actual API integration
+      const mockApiCall = () => new Promise<string>((resolve) => {
+        setTimeout(() => {
+          // Mock response
+          const generatedCode = `// Generated from: "${prompt}"\n\n/**\n * This is a sample generated code\n * In production, this would be replaced with actual AI-generated code\n * @param {string} input - User input to process\n */\nfunction processUserInput(input) {\n  console.log("Processing:", input);\n  return {\n    result: "Processed " + input,\n    timestamp: new Date().toISOString()\n  };\n}\n\n// Example usage\nconst result = processUserInput("${prompt}");\nconsole.log(result);`;
+          resolve(generatedCode);
+        }, 1500);
+      });
+      
+      const generatedCode = await mockApiCall();
+      setCode(generatedCode);
+      
       toast({
         title: "Code Generated",
         description: "Your code has been successfully generated.",
       });
-    }, 1500);
+    } catch (error) {
+      console.error("Error generating code:", error);
+      toast({
+        title: "Generation Failed",
+        description: "There was an error generating your code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleExportCode = () => {
@@ -39,6 +60,8 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       return;
     }
     
+    // In a real implementation, this would create a ZIP file with the code
+    // For now, we'll just show a toast notification
     toast({
       title: "Code Exported",
       description: "Your code has been exported as a ZIP file.",
@@ -55,6 +78,8 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       return;
     }
     
+    // In a real implementation, this would initiate a deployment process
+    // For now, we'll just show a toast notification
     toast({
       title: "Deployment Started",
       description: "Your code is being deployed to Vercel.",
@@ -62,7 +87,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-cyber-ice-blue to-white text-foreground overflow-hidden">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-cyber-ice-blue to-white text-cyber-black overflow-hidden">
       <Navbar />
       
       <div className="flex-1 flex overflow-hidden">
@@ -77,9 +102,9 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
             <PromptInput onGenerate={handleGenerateCode} isLoading={isGenerating} />
             
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-foreground font-orbitron uppercase flex items-center gap-2">
+              <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
                 <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
-                Output
+                Output {generatedFromPrompt && <span className="text-xs font-normal opacity-70">from: "{generatedFromPrompt}"</span>}
               </div>
               <div className="h-[400px] cyberborder ice-card hover-glow">
                 <CodeEditor code={code} setCode={setCode} />
@@ -87,7 +112,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
             </div>
             
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-foreground font-orbitron uppercase flex items-center gap-2">
+              <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
                 <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
                 Actions
               </div>
@@ -103,7 +128,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
         <div className="text-xs text-cyber-black font-mono">Systems: operational</div>
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-cyber-bright-blue animate-pulse"></div>
-          <div className="text-xs text-cyber-black font-mono">AI Engine: active</div>
+          <div className="text-xs text-cyber-black font-mono">AI Engine: {isGenerating ? "processing" : "ready"}</div>
         </div>
       </footer>
     </div>
