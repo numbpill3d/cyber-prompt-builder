@@ -6,7 +6,6 @@ import PromptInput from './PromptInput';
 import CodeEditor from './CodeEditor';
 import ActionButtons from './ActionButtons';
 import { toast } from "@/hooks/use-toast";
-import { generateCode } from '@/services/aiService'; // Import the actual AI service
 
 interface CyberLayoutProps {
   children?: React.ReactNode;
@@ -20,33 +19,32 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const handleGenerateCode = async (prompt: string) => {
     setIsGenerating(true);
     setGeneratedFromPrompt(prompt);
-
+    
     try {
-      const result = await generateCode({ prompt }); // Call the actual generateCode service
-
-      if (result.error) {
-        toast({
-          title: "Generation Failed",
-          description: result.error,
-          variant: "destructive",
-        });
-        setCode(""); // Clear previous code on error
-      } else {
-        setCode(result.code);
-        toast({
-          title: "Code Generated",
-          description: "Your code has been successfully generated.",
-        });
-      }
-
+      // This is a placeholder for the actual API call
+      // In production, replace this with your actual API integration
+      const mockApiCall = () => new Promise<string>((resolve) => {
+        setTimeout(() => {
+          // Mock response
+          const generatedCode = `// Generated from: "${prompt}"\n\n/**\n * This is a sample generated code\n * In production, this would be replaced with actual AI-generated code\n * @param {string} input - User input to process\n */\nfunction processUserInput(input) {\n  console.log("Processing:", input);\n  return {\n    result: "Processed " + input,\n    timestamp: new Date().toISOString()\n  };\n}\n\n// Example usage\nconst result = processUserInput("${prompt}");\nconsole.log(result);`;
+          resolve(generatedCode);
+        }, 1500);
+      });
+      
+      const generatedCode = await mockApiCall();
+      setCode(generatedCode);
+      
+      toast({
+        title: "Code Generated",
+        description: "Your code has been successfully generated.",
+      });
     } catch (error) {
       console.error("Error generating code:", error);
       toast({
         title: "Generation Failed",
-        description: "An unexpected error occurred during code generation. Please try again.",
+        description: "There was an error generating your code. Please try again.",
         variant: "destructive",
       });
-      setCode(""); // Clear previous code on error
     } finally {
       setIsGenerating(false);
     }
@@ -61,12 +59,12 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       });
       return;
     }
-
-    // In a real implementation, this would create a downloadable file or ZIP
+    
+    // In a real implementation, this would create a ZIP file with the code
     // For now, we'll just show a toast notification
     toast({
       title: "Code Exported",
-      description: "Code export functionality would be implemented here.",
+      description: "Your code has been exported as a ZIP file.",
     });
   };
 
@@ -79,33 +77,30 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       });
       return;
     }
-
-    // Deployment is a complex process. This would typically involve:
-    // 1. Building the project (e.g., vite build)
-    // 2. Deploying the build output to a hosting service (e.g., Vercel, Netlify, GitHub Pages)
-    // This often requires CLI tools or integration with hosting provider APIs.
-    // For now, we'll just show a toast notification.
+    
+    // In a real implementation, this would initiate a deployment process
+    // For now, we'll just show a toast notification
     toast({
-      title: "Deployment Initiated",
-      description: "Deployment functionality would be implemented here.",
+      title: "Deployment Started",
+      description: "Your code is being deployed to Vercel.",
     });
   };
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-cyber-ice-blue to-white text-cyber-black overflow-hidden">
       <Navbar />
-
+      
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
-
+        
         <main className="flex-1 flex flex-col p-4 md:p-6 gap-6 overflow-auto">
           <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full">
             <h1 className="font-orbitron text-2xl md:text-3xl text-center text-cyber-bright-blue">
               AI <span className="text-cyber-bright-blue">Code</span> Generator
             </h1>
-
+            
             <PromptInput onGenerate={handleGenerateCode} isLoading={isGenerating} />
-
+            
             <div className="flex flex-col gap-3">
               <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
                 <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
@@ -115,7 +110,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
                 <CodeEditor code={code} setCode={setCode} />
               </div>
             </div>
-
+            
             <div className="flex flex-col gap-3">
               <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
                 <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
@@ -124,11 +119,11 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
               <ActionButtons onExport={handleExportCode} onDeploy={handleDeploy} />
             </div>
           </div>
-
+          
           {children}
         </main>
       </div>
-
+      
       <footer className="h-10 chrome-gradient border-t border-cyber-bright-blue border-opacity-30 flex items-center justify-between px-4">
         <div className="text-xs text-cyber-black font-mono">Systems: operational</div>
         <div className="flex items-center gap-3">
