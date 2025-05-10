@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Home, History, Download, User } from 'lucide-react';
@@ -35,14 +34,14 @@ const SidebarItem = ({
             "w-6 h-6 transition-all", 
             active 
               ? "text-cyber-bright-blue" 
-              : "text-foreground group-hover:text-cyber-sky-blue"
+              : "text-cyber-sky-blue"
           )} 
         />
         <span className={cn(
           "font-orbitron text-xs tracking-wide transition-all",
           active 
             ? "text-cyber-bright-blue" 
-            : "text-foreground group-hover:text-cyber-sky-blue"
+            : "text-cyber-sky-blue"
         )}>
           {label}
         </span>

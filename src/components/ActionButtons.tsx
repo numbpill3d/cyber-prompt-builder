@@ -1,12 +1,11 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Download, Play } from 'lucide-react';
+import { Download, Play, Github } from 'lucide-react';
+import { toast } from "@/hooks/use-toast";
 
 interface ActionButtonsProps {
   className?: string;
-  onExport?: () => void;
-  onDeploy?: () => void;
 }
 
 const TerminalButton: React.FC<{ 
@@ -31,11 +30,53 @@ const TerminalButton: React.FC<{
   );
 };
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ className, onExport, onDeploy }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ className }) => {
+  const handleExport = () => {
+    toast({
+      title: "Export Code",
+      description: "Downloading code as ZIP file...",
+    });
+  };
+
+  const handleDeploy = () => {
+    toast({
+      title: "Deploy to Vercel",
+      description: "Initiating deployment process to Vercel...",
+    });
+  };
+
+  const handleGithub = () => {
+    toast({
+      title: "GitHub Integration",
+      description: "Syncing code with GitHub repository...",
+    });
+  };
+
   return (
     <div className={cn("flex flex-wrap gap-4", className)}>
-      <TerminalButton icon={<Download size={18} />} onClick={onExport}>export --zip</TerminalButton>
-      <TerminalButton icon={<Play size={18} />} onClick={onDeploy}>deploy --vercel</TerminalButton>
+      <TerminalButton 
+        icon={<Download size={18} />} 
+        onClick={handleExport} 
+        className="hover:bg-cyber-ice-blue"
+      >
+        export --zip
+      </TerminalButton>
+      
+      <TerminalButton 
+        icon={<Play size={18} />} 
+        onClick={handleDeploy} 
+        className="hover:bg-cyber-ice-blue"
+      >
+        deploy --vercel
+      </TerminalButton>
+      
+      <TerminalButton 
+        icon={<Github size={18} />} 
+        onClick={handleGithub} 
+        className="hover:bg-cyber-ice-blue"
+      >
+        sync --github
+      </TerminalButton>
     </div>
   );
 };
