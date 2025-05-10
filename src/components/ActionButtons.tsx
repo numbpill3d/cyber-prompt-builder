@@ -6,6 +6,8 @@ import { toast } from "@/hooks/use-toast";
 
 interface ActionButtonsProps {
   className?: string;
+  onExport?: () => void;
+  onDeploy?: () => void;
 }
 
 const TerminalButton: React.FC<{ 
@@ -30,19 +32,27 @@ const TerminalButton: React.FC<{
   );
 };
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ className }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ className, onExport, onDeploy }) => {
   const handleExport = () => {
-    toast({
-      title: "Export Code",
-      description: "Downloading code as ZIP file...",
-    });
+    if (onExport) {
+      onExport();
+    } else {
+      toast({
+        title: "Export Code",
+        description: "Downloading code as ZIP file...",
+      });
+    }
   };
 
   const handleDeploy = () => {
-    toast({
-      title: "Deploy to Vercel",
-      description: "Initiating deployment process to Vercel...",
-    });
+    if (onDeploy) {
+      onDeploy();
+    } else {
+      toast({
+        title: "Deploy to Vercel",
+        description: "Initiating deployment process to Vercel...",
+      });
+    }
   };
 
   const handleGithub = () => {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import CyberLogo from './CyberLogo';
 import { cn } from '@/lib/utils';
 import { toast } from "@/hooks/use-toast";
-import { Github, Vercel } from 'lucide-react';
+import { Github, ArrowUp } from 'lucide-react';
 
 interface NavbarProps {
   className?: string;
@@ -75,7 +75,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           className="flex items-center gap-2 px-3 py-1 border border-cyber-bright-blue text-sm hover:bg-cyber-bright-blue hover:bg-opacity-20 transition-all hover-lift"
           onClick={handleVercelClick}
         >
-          <Vercel size={16} className="text-cyber-bright-blue" />
+          <ArrowUp size={16} className="text-cyber-bright-blue" />
           <span className="terminal-text">Vercel</span>
         </button>
         
@@ -133,7 +133,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               className="w-full text-left px-4 py-2 hover:bg-cyber-ice-blue transition-colors flex items-center gap-2"
               onClick={handleVercelClick}
             >
-              <Vercel size={16} className="text-cyber-bright-blue" />
+              <ArrowUp size={16} className="text-cyber-bright-blue" />
               <span>Vercel</span>
             </button>
             <button 

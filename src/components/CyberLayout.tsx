@@ -70,7 +70,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
         
         <main className="flex-1 flex flex-col p-4 md:p-6 gap-6 overflow-auto">
           <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full">
-            <h1 className="font-orbitron text-2xl md:text-3xl text-center bg-cyber-gradient bg-clip-text text-transparent">
+            <h1 className="font-orbitron text-2xl md:text-3xl text-center text-cyber-bright-blue">
               AI <span className="text-cyber-bright-blue">Code</span> Generator
             </h1>
             
