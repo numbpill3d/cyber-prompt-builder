@@ -124,12 +124,8 @@ const MemoryExplorer = ({
         return 'Code';
       case MemoryType.CONTEXT:
         return 'Context';
-      case MemoryType.REFERENCE:
-        return 'Reference';
-      case MemoryType.SNIPPET:
-        return 'Snippet';
-      case MemoryType.FEEDBACK:
-        return 'Feedback';
+      case MemoryType.DOCUMENT:
+        return 'Document';
       default:
         return type as string;
     }
@@ -144,12 +140,8 @@ const MemoryExplorer = ({
         return 'secondary';
       case MemoryType.CONTEXT:
         return 'outline';
-      case MemoryType.REFERENCE:
+      case MemoryType.DOCUMENT:
         return 'default';
-      case MemoryType.SNIPPET:
-        return 'destructive';
-      case MemoryType.FEEDBACK:
-        return 'outline';
       default:
         return 'outline';
     }
@@ -189,19 +181,16 @@ const MemoryExplorer = ({
             <div className="text-sm text-muted-foreground">
               {filteredMemories.length} memories
             </div>
-            <select
+            <select 
               className="bg-background text-sm px-2 py-1 rounded border"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              aria-label="Filter by memory type"
             >
               <option value="all">All Types</option>
               <option value={MemoryType.CHAT}>Chat</option>
               <option value={MemoryType.CODE}>Code</option>
               <option value={MemoryType.CONTEXT}>Context</option>
-              <option value={MemoryType.REFERENCE}>Reference</option>
-              <option value={MemoryType.SNIPPET}>Snippet</option>
-              <option value={MemoryType.FEEDBACK}>Feedback</option>
+              <option value={MemoryType.DOCUMENT}>Document</option>
             </select>
           </div>
           
@@ -224,14 +213,11 @@ const MemoryExplorer = ({
                   >
                     <CardHeader className="py-2 px-4">
                       <div className="flex items-center justify-between">
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          getMemoryTypeBadgeVariant(memory.metadata.type) === 'default' ? 'bg-blue-100 text-blue-800' :
-                          getMemoryTypeBadgeVariant(memory.metadata.type) === 'secondary' ? 'bg-purple-100 text-purple-800' :
-                          getMemoryTypeBadgeVariant(memory.metadata.type) === 'destructive' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <Badge 
+                          variant={getMemoryTypeBadgeVariant(memory.metadata.type)}
+                        >
                           {getMemoryTypeLabel(memory.metadata.type)}
-                        </div>
+                        </Badge>
                         <div className="text-xs text-muted-foreground">
                           {new Date(memory.createdAt).toLocaleString()}
                         </div>
@@ -249,9 +235,9 @@ const MemoryExplorer = ({
                       </div>
                       <div className="flex gap-1">
                         {memory.metadata.tags?.map((tag: string) => (
-                          <div key={tag} className="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+                          <Badge key={tag} variant="outline" className="text-xs">
                             {tag}
-                          </div>
+                          </Badge>
                         ))}
                       </div>
                     </CardFooter>

@@ -171,7 +171,7 @@ const AgentLab = () => {
               disabled={!isInitialized || !activeSession}
               onClick={() => {
                 if (activeSession) {
-                  systemIntegration.getService<any>('tts').speak(
+                  systemIntegration.getService('tts').speak(
                     "Running agent diagnostic test. All systems operational."
                   );
                 }
