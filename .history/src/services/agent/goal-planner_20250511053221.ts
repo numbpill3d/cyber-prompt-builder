@@ -284,6 +284,26 @@ Ensure each milestone builds logically on previous ones, with clear dependencies
       const roadmapId = this.generateId('roadmap');
       const now = Date.now();
       
+      const milestones = (roadmapData.milestones || []).map((m: any, index: number) => {
+        return {
+          id: this.generateId('milestone'),
+          title: m.title,
+          description: m.description,
+          tasks: [],
+          dependencies: m.dependencies || [],
+          status: 'pending',
+          estimatedHours: m.estimatedHours || 2,
+          priority: m.priority || 'medium'
+        };
+      });
+      
+      // Process milestone dependencies by ID
+      const dependencies: Array<[string, string]> = [];
+      milestones.forEach(milestone => {
+        // Convert milestone titles to IDs
+        const depIds = milestone.dependencies;
+        milestone.dependencies = [];
+        
         depIds.forEach((depTitle: string) => {
           const depMilestone = milestones.find(m => m.title === depTitle);
           if (depMilestone) {
