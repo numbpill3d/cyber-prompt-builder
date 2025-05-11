@@ -31,8 +31,8 @@ export interface EvolutionMetrics {
   taskType: string;
   
   // Raw data
-  rawFeedback?: Record<string, unknown>;        // Raw user feedback data
-  rawPerformance?: Record<string, unknown>;     // Raw performance data
+  rawFeedback?: any;        // Raw user feedback data
+  rawPerformance?: any;     // Raw performance data
 }
 
 /**
