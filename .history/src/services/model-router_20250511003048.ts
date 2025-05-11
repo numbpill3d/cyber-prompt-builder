@@ -125,11 +125,26 @@ export class ModelRouter {
   }
   
   /**
-   * Route based on cost optimization - simplified synchronous version
+   * Route based on cost optimization
    */
-  private routeCostOptimized(prompt: AIPrompt, availableProviders: string[]): string {
-    // Simple cost-based routing based on known provider pricing
-    // Gemini tends to be cheapest, followed by OpenAI, then Claude
+  private async routeCostOptimized(prompt: AIPrompt, availableProviders: string[]): Promise<string> {
+    try {
+      // Get cost estimates for all providers
+      const costEstimates = await estimateCostAcrossProviders(prompt);
+      
+      // Sort providers by total cost (lowest first)
+      const sortedProviders = Object.entries(costEstimates)
+        .filter(([provider]) => availableProviders.includes(provider))
+        .sort(([, estimateA], [, estimateB]) => estimateA.totalCost - estimateB.totalCost);
+      
+      if (sortedProviders.length > 0) {
+        return sortedProviders[0][0]; // Return the cheapest provider
+      }
+    } catch (error) {
+      console.error("Error during cost-based routing:", error);
+    }
+    
+    // Fallback to simple cost-based routing
     const preferredOrder = ['gemini', 'openai', 'claude'];
     
     // Find the first available provider in preferred order
@@ -141,19 +156,6 @@ export class ModelRouter {
     
     // Fall back to first available
     return availableProviders[0];
-  }
-  
-  /**
-   * Get cost estimate for a provider (can be used for more detailed async cost analysis)
-   */
-  public async getCostEstimate(provider: string, prompt: AIPrompt): Promise<number> {
-    try {
-      const costEstimates = await estimateCostAcrossProviders(prompt);
-      return costEstimates[provider]?.totalCost || 0;
-    } catch (error) {
-      console.error(`Error estimating cost for ${provider}:`, error);
-      return 0;
-    }
   }
   
   /**
