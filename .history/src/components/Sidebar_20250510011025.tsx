@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Home, History, Download, User, Settings } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, History, Download, User } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface SidebarProps {
@@ -63,30 +62,10 @@ const SidebarItem = ({
 );
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Set the active item based on the current route
-  const [activeItem, setActiveItem] = useState(() => {
-    if (location.pathname === '/settings') return 'SETTINGS';
-    return 'HOME';
-  });
+  const [activeItem, setActiveItem] = useState('HOME');
   
   const handleItemClick = (item: string) => {
     setActiveItem(item);
-    
-    // Navigate to the appropriate route
-    switch (item) {
-      case 'HOME':
-        navigate('/');
-        break;
-      case 'SETTINGS':
-        navigate('/settings');
-        break;
-      // Add other routes as needed
-      default:
-        navigate('/');
-    }
   };
 
   return (
@@ -113,17 +92,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           active={activeItem === 'EXPORT'}
           onClick={() => handleItemClick('EXPORT')} 
         />
-        <SidebarItem
-          icon={User}
-          label="ACCOUNT"
+        <SidebarItem 
+          icon={User} 
+          label="ACCOUNT" 
           active={activeItem === 'ACCOUNT'}
-          onClick={() => handleItemClick('ACCOUNT')}
-        />
-        <SidebarItem
-          icon={Settings}
-          label="SETTINGS"
-          active={activeItem === 'SETTINGS'}
-          onClick={() => handleItemClick('SETTINGS')}
+          onClick={() => handleItemClick('ACCOUNT')} 
         />
       </div>
       

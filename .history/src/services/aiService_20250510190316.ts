@@ -8,14 +8,12 @@ import { getProvider, getAvailableProviders, DEFAULT_PROVIDER, AIPrompt } from '
 import { TaskManager, Task, TaskManagerOptions } from './agent/task-manager';
 import { settingsManager } from './settings-manager';
 import { exportManager, ExportOptions, DeployOptions } from './export-manager';
-import { modelRouter, RoutingOptions, RoutingStrategy } from './model-router';
 
 // Re-export types for use by consumers
 export type { AIPrompt } from './providers/providers';
 export type { Task, TaskManagerOptions } from './agent/task-manager';
 export type { AppSettings, AgentSettings, AIProviderSettings } from './settings-manager';
 export type { ExportOptions, DeployOptions, ExportFormat, DeployTarget } from './export-manager';
-export type { RoutingOptions, RoutingStrategy } from './model-router';
 
 export interface GenerateCodeParams {
   prompt: string;
@@ -25,8 +23,6 @@ export interface GenerateCodeParams {
   maxTokens?: number;
   language?: string;
   model?: string;
-  routingStrategy?: RoutingStrategy;
-  routingOptions?: Partial<RoutingOptions>;
 }
 
 export interface GenerateCodeResponse {
@@ -43,37 +39,8 @@ const taskManager = new TaskManager();
  */
 export const generateCode = async (params: GenerateCodeParams): Promise<GenerateCodeResponse> => {
   try {
-    // Set routing options if provided
-    if (params.routingStrategy) {
-      modelRouter.setRoutingStrategy(params.routingStrategy);
-    }
-    
-    if (params.routingOptions) {
-      modelRouter.setRoutingOptions(params.routingOptions);
-    }
-    
-    // Prepare the prompt
-    const aiPrompt: AIPrompt = {
-      content: params.prompt,
-      context: params.context
-    };
-    
-    // Determine which provider to use either explicitly or via router
-    let providerName: string;
-    if (params.provider) {
-      // Explicit provider specified
-      providerName = params.provider;
-    } else {
-      // Use model router to select the best provider
-      try {
-        providerName = modelRouter.routePrompt(aiPrompt);
-      } catch (error) {
-        return {
-          code: "",
-          error: `Failed to select a provider: ${error instanceof Error ? error.message : String(error)}`
-        };
-      }
-    }
+    // Determine which provider to use
+    const providerName = params.provider || settingsManager.getActiveProvider() || DEFAULT_PROVIDER;
     
     // Get API key from settings
     const apiKey = settingsManager.getApiKey(providerName);
@@ -86,8 +53,6 @@ export const generateCode = async (params: GenerateCodeParams): Promise<Generate
     
     // Get the preferred model or use the provided one
     const model = params.model || settingsManager.getPreferredModel(providerName);
-    
-    console.log(`Using provider: ${providerName} with model: ${model}`);
     
     // Create a task
     const task = taskManager.createTask(params.prompt, providerName);
@@ -122,6 +87,12 @@ export const generateCode = async (params: GenerateCodeParams): Promise<Generate
     
     // Get provider
     const provider = getProvider(providerName);
+    
+    // Prepare the prompt
+    const aiPrompt: AIPrompt = {
+      content: params.prompt,
+      context: params.context
+    };
     
     // Generate code
     const result = await provider.generateCode(aiPrompt, {
@@ -238,30 +209,3 @@ export const deployCode = async (code: string, options: DeployOptions): Promise<
  * This allows direct access to settings if needed
  */
 export const getSettingsManager = () => settingsManager;
-
-/**
- * Get model router singleton
- * This allows direct access to the model router if needed
- */
-export const getModelRouter = () => modelRouter;
-
-/**
- * Set the routing strategy
- */
-export const setRoutingStrategy = (strategy: RoutingStrategy): void => {
-  modelRouter.setRoutingStrategy(strategy);
-};
-
-/**
- * Set routing options
- */
-export const setRoutingOptions = (options: Partial<RoutingOptions>): void => {
-  modelRouter.setRoutingOptions(options);
-};
-
-/**
- * Get current routing options
- */
-export const getRoutingOptions = (): RoutingOptions => {
-  return modelRouter.getRoutingOptions();
-};
