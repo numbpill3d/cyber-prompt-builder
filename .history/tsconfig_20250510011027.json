@@ -7,10 +7,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@frontend/*": ["./frontend/*"],
-      "@backend/*": ["./backend/*"],
-      "@shared/*": ["./shared/*"]
+      "@/*": ["./src/*"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
