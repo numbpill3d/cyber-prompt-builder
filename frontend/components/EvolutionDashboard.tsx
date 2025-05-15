@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useEvolutionService } from '@/hooks/use-evolution-service';
-import { EvolutionMetrics, EvolutionReport } from '@/core/interfaces/evolution-engine';
+import { useEvolutionService } from '@frontend/hooks/use-evolution-service';
+import { EvolutionMetrics, EvolutionReport } from '@backend/core/interfaces/evolution-engine';
 import { 
   Card, 
   CardContent, 
@@ -8,11 +8,11 @@ import {
   CardTitle, 
   CardDescription, 
   CardFooter 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+} from '@frontend/components/ui/card';
+import { Button } from '@frontend/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@frontend/components/ui/tabs';
+import { Badge } from '@frontend/components/ui/badge';
+import { Progress } from '@frontend/components/ui/progress';
 import { 
   TrendingUp, 
   TrendingDown, 

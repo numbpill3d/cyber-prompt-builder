@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ModelRouter } from './model-router';
 import { ServiceLocator } from './service-locator';
-import { MemoryService } from '@/services/memory/memory-service';
-import { ConversationService } from '@/services/conversation/conversation-service';
+import { MemoryService } from '@backend/services/memory/memory-service';
+import { ConversationService } from '@backend/services/conversation/conversation-service';
 import { createMockAIProvider, createMockMemoryEngine, createMockConversationManager } from '@/test/mocks/service-mocks';
 
 describe('ModelRouter Integration Test', () => {

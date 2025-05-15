@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { configureApiKey } from '@/services/aiService';
-import { toast } from '@/hooks/use-toast';
+import { configureApiKey } from '@backend/services/aiService';
+import { toast } from '@frontend/hooks/use-toast';
 
 interface ApiKeyModalProps {
   isOpen: boolean;

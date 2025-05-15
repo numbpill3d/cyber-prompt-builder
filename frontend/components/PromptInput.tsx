@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Textarea } from "@/components/ui/textarea";
+import { cn } from '@shared/lib/utils';
+import { Textarea } from '@frontend/components/ui/textarea";
 
 interface PromptInputProps {
   className?: string;

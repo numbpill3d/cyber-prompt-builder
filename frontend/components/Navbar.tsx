@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import CyberLogo from './CyberLogo';
-import { cn } from '@/lib/utils';
-import { toast } from "@/hooks/use-toast";
+import { cn } from '@shared/lib/utils';
+import { toast } from '@frontend/hooks/use-toast";
 import { Github, ArrowUp } from 'lucide-react';
 
 interface NavbarProps {

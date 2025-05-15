@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@shared/lib/utils';
 import { Download, Play, Github, Database, Loader2 } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@frontend/hooks/use-toast";
 
 interface ActionButtonsProps {
   className?: string;

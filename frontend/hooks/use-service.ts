@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getService, hasService } from '@/core/services/service-locator';
+import { getService, hasService } from '@backend/core/services/service-locator';
 
 /**
  * Generic hook for accessing services from the service locator

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@shared/lib/utils';
 import { Home, History, Download, User, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@frontend/components/ui/hover-card";
 
 interface SidebarProps {
   className?: string;

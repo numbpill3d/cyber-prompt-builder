@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@shared/lib/utils';
 
 type MainLayoutProps = {
   children: React.ReactNode;

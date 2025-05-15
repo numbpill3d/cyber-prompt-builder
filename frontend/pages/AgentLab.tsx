@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useMemoryService } from '@/hooks/use-memory-service';
-import { useTTSService } from '@/hooks/use-tts-service';
-import { useEvolutionService } from '@/hooks/use-evolution-service';
+import { useMemoryService } from '@frontend/hooks/use-memory-service';
+import { useTTSService } from '@frontend/hooks/use-tts-service';
+import { useEvolutionService } from '@frontend/hooks/use-evolution-service';
 import { 
   Card, 
   CardContent, 
@@ -9,25 +9,25 @@ import {
   CardFooter, 
   CardHeader, 
   CardTitle 
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+} from '@frontend/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@frontend/components/ui/tabs';
+import { Button } from '@frontend/components/ui/button';
+import { Separator } from '@frontend/components/ui/separator';
+import { Input } from '@frontend/components/ui/input';
+import { Textarea } from '@frontend/components/ui/textarea';
+import { Switch } from '@frontend/components/ui/switch';
+import { Label } from '@frontend/components/ui/label';
 import { 
   MemoryType,
   MemoryEntry 
-} from '@/core/interfaces/memory-engine';
+} from '@backend/core/interfaces/memory-engine';
 import {
   EvolutionMetrics,
   ImprovementSuggestion
-} from '@/core/interfaces/evolution-engine';
-import MemoryExplorer from '@/components/MemoryExplorer';
-import TtsControls from '@/components/TtsControls';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+} from '@backend/core/interfaces/evolution-engine';
+import MemoryExplorer from '@frontend/components/MemoryExplorer';
+import TtsControls from '@frontend/components/TtsControls';
+import { LoadingSpinner } from '@frontend/components/ui/loading-spinner';
 import { 
   Play, 
   Terminal, 

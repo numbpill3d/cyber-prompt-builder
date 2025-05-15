@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useMemoryService } from '@/hooks/use-memory-service';
-import { MemoryEntry, MemorySearchParams, MemoryType } from '@/core/interfaces/memory-engine';
+import { useMemoryService } from '@frontend/hooks/use-memory-service';
+import { MemoryEntry, MemorySearchParams, MemoryType } from '@backend/core/interfaces/memory-engine';
 import { 
   Card, 
   CardContent, 
@@ -8,18 +8,18 @@ import {
   CardFooter, 
   CardHeader, 
   CardTitle 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@frontend/components/ui/card';
+import { Button } from '@frontend/components/ui/button';
+import { Input } from '@frontend/components/ui/input';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+} from '@frontend/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@frontend/components/ui/tabs';
+import { Badge } from '@frontend/components/ui/badge';
 import { Search, Filter, Trash2, Clock, Tag } from 'lucide-react';
 import { LoadingSpinner } from './ui/loading-spinner';
 

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useTTSService } from '@/hooks/use-tts-service';
+import { useTTSService } from '@frontend/hooks/use-tts-service';
 import { 
   TTSPlaybackStatus, 
   TTSPlaybackEvent, 
   TTSVoicePreference 
-} from '@/core/interfaces/tts-service';
+} from '@backend/core/interfaces/tts-service';
 import { 
   Card, 
   CardContent, 
@@ -12,16 +12,16 @@ import {
   CardTitle, 
   CardDescription, 
   CardFooter 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+} from '@frontend/components/ui/card';
+import { Button } from '@frontend/components/ui/button';
+import { Slider } from '@frontend/components/ui/slider';
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from '@/components/ui/select';
+} from '@frontend/components/ui/select';
 import { 
   Play, 
   Pause, 
@@ -32,8 +32,8 @@ import {
   Settings,
   Mic
 } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Switch } from '@frontend/components/ui/switch';
+import { Label } from '@frontend/components/ui/label';
 import { LoadingSpinner } from './ui/loading-spinner';
 
 export default function TtsControls() {
