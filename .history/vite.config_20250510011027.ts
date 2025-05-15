@@ -17,9 +17,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@frontend": path.resolve(__dirname, "./frontend"),
-      "@backend": path.resolve(__dirname, "./backend"),
-      "@shared": path.resolve(__dirname, "./shared"),
     },
   },
 }));

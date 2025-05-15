@@ -1,10 +1,11 @@
+
 import { createRoot } from 'react-dom/client'
 import { StrictMode } from 'react'
 import App from './App.tsx'
 import './index.css'
-import { initializeServices } from '@backend/services/initialize-services'
-import { errorHandler } from '@backend/services/error/error-handler'
-import { Logger } from '@backend/services/logging/logger'
+import { initializeServices } from './services/initialize-services'
+import { errorHandler } from './services/error/error-handler'
+import { Logger } from './services/logging/logger'
 
 const logger = new Logger('Main');
 
