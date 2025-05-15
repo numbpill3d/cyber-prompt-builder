@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: cyber-prompt-builder
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x
+      # Application Settings
+      - key: REACT_APP_APP_ENVIRONMENT
+        value: production
+      # AI Provider API Keys - These should be set in the Render dashboard
+      - key: REACT_APP_PROVIDERS_OPENAI_API_KEY
+        sync: false
+      - key: REACT_APP_PROVIDERS_CLAUDE_API_KEY
+        sync: false
+      - key: REACT_APP_PROVIDERS_GEMINI_API_KEY
+        sync: false
+      - key: REACT_APP_PROVIDERS_DEFAULT_PROVIDER
+        value: openai
+      # Agent Settings
+      - key: REACT_APP_AGENT_MAX_ITERATIONS
+        value: "3"
+      - key: REACT_APP_AGENT_ENABLE_TASK_BREAKDOWN
+        value: "true"
+      - key: REACT_APP_AGENT_ENABLE_ITERATION
+        value: "true"
+      - key: REACT_APP_AGENT_ENABLE_CONTEXT_MEMORY
+        value: "true"
+      # Prompt Builder Settings
+      - key: REACT_APP_PROMPT_BUILDER_MAX_TOKENS
+        value: "4096"
+      - key: REACT_APP_PROMPT_BUILDER_TEMPERATURE
+        value: "0.7"
+      # TTS Settings
+      - key: REACT_APP_TTS_ENABLED
+        value: "false"

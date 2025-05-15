@@ -21,8 +21,10 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   };
 
   const handleDocsClick = () => {
-    // Navigate to the help page
-    window.location.href = '/help';
+    toast({
+      title: "Documentation",
+      description: "This would open the documentation in a real application.",
+    });
   };
 
   const handleGithubClick = () => {
@@ -55,7 +57,6 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
 
       <div className="md:flex items-center gap-4 hidden">
         <button
-          type="button"
           className="flex items-center gap-2 px-3 py-1 border border-cyber-bright-blue text-sm hover:bg-cyber-bright-blue hover:bg-opacity-20 transition-all hover-lift"
           onClick={handleGithubClick}
         >
@@ -63,16 +64,15 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           <span className="terminal-text">GitHub</span>
         </button>
 
-        <Link
-          to="/help"
+        <button
           className="flex items-center gap-2 px-3 py-1 border border-cyber-bright-blue text-sm hover:bg-cyber-bright-blue hover:bg-opacity-20 transition-all hover-lift"
+          onClick={handleSupabaseClick}
         >
-          <HelpCircle size={16} className="text-cyber-bright-blue" />
-          <span className="terminal-text">Help</span>
-        </Link>
+          <span className="text-cyber-bright-blue font-bold">S</span>
+          <span className="terminal-text">Supabase</span>
+        </button>
 
         <button
-          type="button"
           className="flex items-center gap-2 px-3 py-1 border border-cyber-bright-blue text-sm hover:bg-cyber-bright-blue hover:bg-opacity-20 transition-all hover-lift"
           onClick={handleVercelClick}
         >

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .box { fill: #f0f8ff; stroke: #4682b4; stroke-width: 2; }
+    .arrow { stroke: #4682b4; stroke-width: 2; marker-end: url(#arrowhead); }
+    .label { font-family: Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #333; text-anchor: middle; }
+    .step { font-family: Arial, sans-serif; font-size: 12px; fill: #666; text-anchor: middle; }
+    .highlight { fill: #e6f7ff; stroke: #1890ff; stroke-width: 2; }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4682b4" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" class="title">Cyber Prompt Builder: From User Prompt to Code Generation</text>
+  
+  <!-- User Input -->
+  <rect x="50" y="70" width="160" height="80" rx="5" class="highlight" />
+  <text x="130" y="100" class="label">User Input</text>
+  <text x="130" y="120" class="step">PromptInput.tsx</text>
+  <text x="130" y="140" class="step">User enters prompt</text>
+  
+  <!-- Prompt Processing -->
+  <rect x="50" y="200" width="160" height="80" rx="5" class="box" />
+  <text x="130" y="230" class="label">Prompt Processing</text>
+  <text x="130" y="250" class="step">CyberLayout.tsx</text>
+  <text x="130" y="270" class="step">handleGenerateCode()</text>
+  
+  <!-- AI Service -->
+  <rect x="50" y="330" width="160" height="80" rx="5" class="box" />
+  <text x="130" y="360" class="label">AI Service</text>
+  <text x="130" y="380" class="step">aiService.ts</text>
+  <text x="130" y="400" class="step">generateCode()</text>
+  
+  <!-- Model Router -->
+  <rect x="320" y="200" width="160" height="80" rx="5" class="box" />
+  <text x="400" y="230" class="label">Model Router</text>
+  <text x="400" y="250" class="step">model-router.ts</text>
+  <text x="400" y="270" class="step">routePrompt()</text>
+  
+  <!-- Provider Selection -->
+  <rect x="320" y="330" width="160" height="80" rx="5" class="box" />
+  <text x="400" y="360" class="label">Provider Selection</text>
+  <text x="400" y="380" class="step">Selects OpenAI, Claude,</text>
+  <text x="400" y="400" class="step">or Gemini</text>
+  
+  <!-- API Request -->
+  <rect x="590" y="200" width="160" height="80" rx="5" class="box" />
+  <text x="670" y="230" class="label">API Request</text>
+  <text x="670" y="250" class="step">*-provider.ts</text>
+  <text x="670" y="270" class="step">generateResponse()</text>
+  
+  <!-- Response Processing -->
+  <rect x="590" y="330" width="160" height="80" rx="5" class="box" />
+  <text x="670" y="360" class="label">Response Processing</text>
+  <text x="670" y="380" class="step">response-handler.ts</text>
+  <text x="670" y="400" class="step">parseResponse()</text>
+  
+  <!-- Code Display -->
+  <rect x="320" y="460" width="160" height="80" rx="5" class="highlight" />
+  <text x="400" y="490" class="label">Code Display</text>
+  <text x="400" y="510" class="step">CodeEditor.tsx</text>
+  <text x="400" y="530" class="step">Displays generated code</text>
+  
+  <!-- Arrows -->
+  <line x1="130" y1="150" x2="130" y2="200" class="arrow" />
+  <line x1="130" y1="280" x2="130" y2="330" class="arrow" />
+  <line x1="210" y1="240" x2="320" y2="240" class="arrow" />
+  <line x1="210" y1="370" x2="320" y2="370" class="arrow" />
+  <line x1="400" y1="280" x2="400" y2="330" class="arrow" />
+  <line x1="480" y1="240" x2="590" y2="240" class="arrow" />
+  <line x1="480" y1="370" x2="590" y2="370" class="arrow" />
+  <line x1="670" y1="280" x2="670" y2="330" class="arrow" />
+  <line x1="590" y1="370" x2="480" y2="460" class="arrow" />
+  <line x1="320" y1="370" x2="320" y2="500" class="arrow" />
+  
+  <!-- Legend -->
+  <rect x="590" y="460" width="20" height="20" class="highlight" />
+  <text x="620" y="475" class="step" text-anchor="start">User Interaction Points</text>
+  <rect x="590" y="490" width="20" height="20" class="box" />
+  <text x="620" y="505" class="step" text-anchor="start">System Processing</text>
+</svg>
