@@ -12,15 +12,6 @@ import { configService } from './config/config-service';
 // Types of routing strategies
 export type RoutingStrategy = 'user-selected' | 'cost-optimized' | 'performance-optimized' | 'balanced' | 'auto';
 
-// Valid routing strategies array for validation
-export const VALID_ROUTING_STRATEGIES = [
-  'user-selected',
-  'cost-optimized',
-  'performance-optimized',
-  'balanced',
-  'auto'
-] as const;
-
 export interface RoutingOptions {
   strategy: RoutingStrategy;
   promptComplexity?: 'low' | 'medium' | 'high' | 'auto';
@@ -398,7 +389,7 @@ export class ModelRouter {
    */
   public setRoutingStrategy(strategy: RoutingStrategy): void {
     try {
-      if (!VALID_ROUTING_STRATEGIES.includes(strategy as RoutingStrategy)) {
+      if (!Object.values(RoutingStrategy).includes(strategy as any)) {
         throw new ValidationError(`Invalid routing strategy: ${strategy}`);
       }
       

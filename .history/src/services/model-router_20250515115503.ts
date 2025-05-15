@@ -398,7 +398,7 @@ export class ModelRouter {
    */
   public setRoutingStrategy(strategy: RoutingStrategy): void {
     try {
-      if (!VALID_ROUTING_STRATEGIES.includes(strategy as RoutingStrategy)) {
+      if (!VALID_ROUTING_STRATEGIES.includes(strategy as any)) {
         throw new ValidationError(`Invalid routing strategy: ${strategy}`);
       }
       
