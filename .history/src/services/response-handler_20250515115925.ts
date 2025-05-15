@@ -82,7 +82,7 @@ export const parseResponse = (
     // Extract code blocks using markdown code block format
     const codeBlockRegex = /```([\w#]+)?\s*\n([\s\S]*?)```/g;
     let lastIndex = 0;
-    const explanationParts = [];
+    let explanationParts = [];
     let match;
     
     while ((match = codeBlockRegex.exec(response.code)) !== null) {
@@ -148,28 +148,23 @@ export const parseResponse = (
   } catch (error) {
     logger.error('Failed to parse response', { error });
     
-    // Create a fallback response
-    const fallbackResponse: StructuredResponse = {
-      codeBlocks: { 'text': response.code || 'Error parsing response' },
-      meta: {
-        model: meta.model || 'unknown',
-        provider: meta.provider || 'unknown',
-        cost: meta.cost || 0,
-        tokens: meta.tokens || { input: 0, output: 0, total: 0 },
-        timestamp: Date.now(),
-        duration: meta.duration || 0
-      },
-      explanation: 'Error parsing response. Please check the raw output.',
-      rawResponse: response.code
-    };
-    
-    // Log the error but return a valid response to prevent UI errors
-    errorHandler.handleError(error as Error, {
-      context: 'parseResponse',
-      responseLength: response.code?.length
-    });
-    
-    return fallbackResponse;
+    // Return a minimal valid response to prevent UI errors
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      {
+        codeBlocks: { 'text': response.code || 'Error parsing response' },
+        meta: {
+          model: meta.model || 'unknown',
+          provider: meta.provider || 'unknown',
+          cost: meta.cost || 0,
+          tokens: meta.tokens || { input: 0, output: 0, total: 0 },
+          timestamp: Date.now(),
+          duration: meta.duration || 0
+        },
+        explanation: 'Error parsing response. Please check the raw output.',
+        rawResponse: response.code
+      }
+    )();
   }
 };
 
@@ -191,9 +186,10 @@ export const extractExplanation = (response: StructuredResponse): string => {
     return `Generated code includes: ${languages.join(', ')}`;
   } catch (error) {
     logger.error('Failed to extract explanation', { error });
-    // Log the error but return a valid string
-    errorHandler.handleError(error as Error, { context: 'extractExplanation' });
-    return 'Error extracting explanation from response.';
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      'Error extracting explanation from response.'
+    )();
   }
 };
 
@@ -207,9 +203,10 @@ export const estimateTokenCount = (text: string): number => {
     return Math.ceil(text.length / 4);
   } catch (error) {
     logger.error('Failed to estimate token count', { error });
-    // Log the error but return a valid number
-    errorHandler.handleError(error as Error, { context: 'estimateTokenCount' });
-    return Math.ceil((text?.length || 0) / 4);
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      Math.ceil((text?.length || 0) / 4)
+    )();
   }
 };
 
@@ -225,9 +222,10 @@ export const isFullStackWebResponse = (response: StructuredResponse): boolean =>
     );
   } catch (error) {
     logger.error('Failed to determine if response is full-stack web', { error });
-    // Log the error but return a valid boolean
-    errorHandler.handleError(error as Error, { context: 'isFullStackWebResponse' });
-    return false;
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      false
+    )();
   }
 };
 
@@ -252,9 +250,10 @@ export const getPrimaryLanguage = (response: StructuredResponse): string => {
     return languages[0];
   } catch (error) {
     logger.error('Failed to determine primary language', { error });
-    // Log the error but return a valid string
-    errorHandler.handleError(error as Error, { context: 'getPrimaryLanguage' });
-    return 'text';
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      'text'
+    )();
   }
 };
 
@@ -310,9 +309,10 @@ export const updateResponseWithChanges = (
     return result;
   } catch (error) {
     logger.error('Failed to update response with changes', { error });
-    // Log the error but return the original response
-    errorHandler.handleError(error as Error, { context: 'updateResponseWithChanges' });
-    return original;
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      original
+    )();
   }
 };
 
@@ -363,10 +363,9 @@ export const generateStandaloneHtml = (response: StructuredResponse): string => 
     return html;
   } catch (error) {
     logger.error('Failed to generate standalone HTML', { error });
-    // Log the error but return a valid HTML string
-    errorHandler.handleError(error as Error, { context: 'generateStandaloneHTML' });
-    
-    return `<!DOCTYPE html>
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -378,7 +377,8 @@ export const generateStandaloneHtml = (response: StructuredResponse): string => 
   <p>There was an error generating the standalone HTML file.</p>
   <pre>${error instanceof Error ? error.message : String(error)}</pre>
 </body>
-</html>`;
+</html>`
+    )();
   }
 };
 
@@ -441,8 +441,9 @@ export const createCodeArchive = async (response: StructuredResponse): Promise<B
     return new Blob(['ZIP placeholder'], { type: 'application/zip' });
   } catch (error) {
     logger.error('Failed to create code archive', { error });
-    // Log the error but return a valid Blob
-    errorHandler.handleError(error as Error, { context: 'createCodeArchive' });
-    return new Blob(['Error creating ZIP archive'], { type: 'text/plain' });
+    return errorHandler.withFallback(
+      async () => { throw error; },
+      new Blob(['Error creating ZIP archive'], { type: 'text/plain' })
+    )();
   }
 };
