@@ -33,7 +33,7 @@ app.get('/health', (req, res) => {
   const indexPath = path.join(distPath, 'index.html');
   const distExists = fs.existsSync(distPath);
   const indexExists = distExists && fs.existsSync(indexPath);
-
+  
   // Get list of files in dist directory if it exists
   let distFiles = [];
   if (distExists) {
@@ -43,18 +43,18 @@ app.get('/health', (req, res) => {
       console.error('Error reading dist directory:', error);
     }
   }
-
+  
   // Get environment variables (excluding sensitive ones)
   const envVars = {};
   Object.keys(process.env).forEach(key => {
-    if (key.startsWith('REACT_APP_') &&
-        !key.includes('KEY') &&
-        !key.includes('SECRET') &&
+    if (key.startsWith('REACT_APP_') && 
+        !key.includes('KEY') && 
+        !key.includes('SECRET') && 
         !key.includes('TOKEN')) {
       envVars[key] = process.env[key];
     }
   });
-
+  
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -94,7 +94,7 @@ try {
   console.log('Checking if dist directory exists:', fs.existsSync(distPath));
   if (fs.existsSync(distPath)) {
     console.log('dist directory contents:', fs.readdirSync(distPath));
-
+    
     const indexPath = path.join(distPath, 'index.html');
     console.log('Checking if index.html exists:', fs.existsSync(indexPath));
   }
@@ -103,11 +103,8 @@ try {
 }
 
 // Serve static files from the dist and public directories
-// Make sure to serve the dist directory at the root path
-app.use('/', express.static(path.join(__dirname, 'dist')));
-// Explicitly serve the assets directory to handle the absolute paths in index.html
+app.use(express.static(path.join(__dirname, 'dist')));
 app.use('/assets', express.static(path.join(__dirname, 'dist', 'assets')));
-// Serve the public directory for fallback files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Log all incoming requests
@@ -121,7 +118,7 @@ app.get('/', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   const errorPath = path.join(__dirname, 'public', 'error.html');
   const fallbackPath = path.join(__dirname, 'public', 'index.html');
-
+  
   console.log('Serving index.html from:', indexPath);
 
   // Check if the dist/index.html file exists
