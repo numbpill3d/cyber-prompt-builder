@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('Checking build output...');
+console.log('Testing build output...');
 
 // Check if dist directory exists
 const distPath = path.join(__dirname, 'dist');
@@ -41,7 +41,7 @@ if (!indexContent.includes('id="root"')) {
 
 console.log('✅ index.html contains a root element');
 
-// Check for JavaScript files in assets directory
+// Check for assets directory
 const assetsPath = path.join(distPath, 'assets');
 if (!fs.existsSync(assetsPath)) {
   console.error('❌ assets directory does not exist in dist directory!');
@@ -74,11 +74,11 @@ console.log('\n✅ Build output check completed successfully');
 // Function to list files recursively
 function listFilesRecursively(dir, indent = '') {
   const files = fs.readdirSync(dir);
-
+  
   files.forEach(file => {
     const filePath = path.join(dir, file);
     const stats = fs.statSync(filePath);
-
+    
     if (stats.isDirectory()) {
       console.log(`${indent}📁 ${file}/`);
       listFilesRecursively(filePath, indent + '  ');

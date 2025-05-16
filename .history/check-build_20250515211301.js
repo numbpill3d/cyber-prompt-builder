@@ -41,29 +41,20 @@ if (!indexContent.includes('id="root"')) {
 
 console.log('✅ index.html contains a root element');
 
-// Check for JavaScript files in assets directory
-const assetsPath = path.join(distPath, 'assets');
-if (!fs.existsSync(assetsPath)) {
-  console.error('❌ assets directory does not exist in dist directory!');
-  process.exit(1);
-}
-
-console.log('✅ assets directory exists');
-
-// Check for JavaScript files in assets directory
-const jsFiles = fs.readdirSync(assetsPath).filter(file => file.endsWith('.js'));
-console.log(`Found ${jsFiles.length} JavaScript files in assets directory`);
+// Check for JavaScript files
+const jsFiles = fs.readdirSync(distPath).filter(file => file.endsWith('.js'));
+console.log(`Found ${jsFiles.length} JavaScript files in dist directory`);
 
 if (jsFiles.length === 0) {
-  console.error('❌ No JavaScript files found in assets directory!');
+  console.error('❌ No JavaScript files found in dist directory!');
   process.exit(1);
 }
 
-console.log('✅ JavaScript files exist in assets directory');
+console.log('✅ JavaScript files exist');
 
-// Check for CSS files in assets directory
-const cssFiles = fs.readdirSync(assetsPath).filter(file => file.endsWith('.css'));
-console.log(`Found ${cssFiles.length} CSS files in assets directory`);
+// Check for CSS files
+const cssFiles = fs.readdirSync(distPath).filter(file => file.endsWith('.css'));
+console.log(`Found ${cssFiles.length} CSS files in dist directory`);
 
 // List all files in dist directory
 console.log('\nFiles in dist directory:');
@@ -74,11 +65,11 @@ console.log('\n✅ Build output check completed successfully');
 // Function to list files recursively
 function listFilesRecursively(dir, indent = '') {
   const files = fs.readdirSync(dir);
-
+  
   files.forEach(file => {
     const filePath = path.join(dir, file);
     const stats = fs.statSync(filePath);
-
+    
     if (stats.isDirectory()) {
       console.log(`${indent}📁 ${file}/`);
       listFilesRecursively(filePath, indent + '  ');

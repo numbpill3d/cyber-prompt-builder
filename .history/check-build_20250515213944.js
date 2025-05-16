@@ -61,9 +61,9 @@ if (jsFiles.length === 0) {
 
 console.log('✅ JavaScript files exist in assets directory');
 
-// Check for CSS files in assets directory
-const cssFiles = fs.readdirSync(assetsPath).filter(file => file.endsWith('.css'));
-console.log(`Found ${cssFiles.length} CSS files in assets directory`);
+// Check for CSS files
+const cssFiles = fs.readdirSync(distPath).filter(file => file.endsWith('.css'));
+console.log(`Found ${cssFiles.length} CSS files in dist directory`);
 
 // List all files in dist directory
 console.log('\nFiles in dist directory:');
