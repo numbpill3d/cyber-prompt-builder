@@ -419,63 +419,6 @@ export class SettingsService implements SettingsManager {
   }
 
   /**
-   * Get active mode
-   */
-  getActiveMode(): string {
-    return this.settings.mode?.activeMode || 'code';
-  }
-
-  /**
-   * Set active mode
-   */
-  setActiveMode(modeId: string): void {
-    if (!this.settings.mode) {
-      this.settings.mode = {
-        activeMode: 'code',
-        modes: { ...DEFAULT_MODES },
-        customModes: {}
-      };
-    }
-
-    this.settings.mode.activeMode = modeId;
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get mode settings
-   */
-  getModeSettings(): ModeSettings | undefined {
-    return this.settings.mode ? JSON.parse(JSON.stringify(this.settings.mode)) : undefined;
-  }
-
-  /**
-   * Update mode settings
-   */
-  updateModeSettings(settings: Partial<ModeSettings>): void {
-    if (!this.settings.mode) {
-      this.settings.mode = {
-        activeMode: 'code',
-        modes: { ...DEFAULT_MODES },
-        customModes: {}
-      };
-    }
-
-    this.settings.mode = {
-      ...this.settings.mode,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
    * Save settings to storage
    */
   async saveSettingsToStorage(): Promise<boolean> {

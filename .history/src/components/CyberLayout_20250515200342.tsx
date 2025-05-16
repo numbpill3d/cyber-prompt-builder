@@ -31,22 +31,6 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   useEffect(() => {
     const settings = getSettingsManager().getSettings();
     setActiveProvider(settings.activeProvider);
-
-    // Set active mode
-    const currentMode = modeService.getActiveModeId();
-    setActiveMode(currentMode);
-
-    // Subscribe to mode changes
-    const handleModeChange = (event: any) => {
-      setActiveMode(event.currentMode);
-    };
-
-    modeService.onModeChange(handleModeChange);
-
-    // Cleanup subscription on unmount
-    return () => {
-      modeService.offModeChange(handleModeChange);
-    };
   }, []);
 
   const handleGenerateCode = async (prompt: string) => {
@@ -60,14 +44,9 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       const provider = settings.activeProvider;
       const modelSettings = settings.providers[provider as keyof typeof settings.providers];
 
-      // Build mode-aware prompt
-      const enhancedPrompt = buildModeAwarePrompt({
-        taskInstruction: prompt
-      });
-
-      // Generate code using the current settings and enhanced prompt
+      // Generate code using the current settings
       const result = await generateCode({
-        prompt: enhancedPrompt,
+        prompt,
         provider,
         model: modelSettings.preferredModel,
         temperature: 0.7,
@@ -225,7 +204,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-cyber-bright-blue animate-pulse"></div>
           <div className="text-xs text-cyber-black font-mono">
-            AI Engine: {isGenerating ? "processing" : "ready"} | Provider: {activeProvider} | Mode: {activeMode}
+            AI Engine: {isGenerating ? "processing" : "ready"} | Provider: {activeProvider}
           </div>
         </div>
       </footer>

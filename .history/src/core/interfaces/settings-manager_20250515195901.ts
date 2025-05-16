@@ -84,12 +84,6 @@ export interface SettingsManager {
   getUISettings(): UISettings;
   updateUISettings(settings: Partial<UISettings>): void;
 
-  // Mode settings
-  getActiveMode(): string;
-  setActiveMode(modeId: string): void;
-  getModeSettings(): ModeSettings | undefined;
-  updateModeSettings(settings: Partial<ModeSettings>): void;
-
   // Persistence
   saveSettingsToStorage(): Promise<boolean>;
   loadSettingsFromStorage(): Promise<boolean>;

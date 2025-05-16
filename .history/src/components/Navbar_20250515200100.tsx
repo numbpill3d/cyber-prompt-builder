@@ -55,10 +55,6 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         <h1 className="font-orbitron text-xl font-bold text-cyber-bright-blue tracking-wider">SYNTΩX</h1>
       </div>
 
-      <div className="flex items-center gap-3">
-        <ModeSelector />
-      </div>
-
       <div className="md:flex items-center gap-4 hidden">
         <button
           className="flex items-center gap-2 px-3 py-1 border border-cyber-bright-blue text-sm hover:bg-cyber-bright-blue hover:bg-opacity-20 transition-all hover-lift"

@@ -144,22 +144,5 @@ const parseLogLevel = (level: string): LogLevel => {
   }
 };
 
-/**
- * Initialize mode system
- */
-const initializeMode = async (): Promise<void> => {
-  try {
-    logger.info('Initializing mode system');
-
-    // Initialize mode integration with prompt builder
-    initializeModeIntegration();
-
-    logger.info('Mode system initialized');
-  } catch (error) {
-    logger.error('Failed to initialize mode system', { error });
-    throw error;
-  }
-};
-
 // Export individual initialization functions for testing
-export { initializeConfig, initializeLogging, initializeErrorHandling, initializeMode };
+export { initializeConfig, initializeLogging, initializeErrorHandling };

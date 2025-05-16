@@ -225,7 +225,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-cyber-bright-blue animate-pulse"></div>
           <div className="text-xs text-cyber-black font-mono">
-            AI Engine: {isGenerating ? "processing" : "ready"} | Provider: {activeProvider} | Mode: {activeMode}
+            AI Engine: {isGenerating ? "processing" : "ready"} | Provider: {activeProvider}
           </div>
         </div>
       </footer>
