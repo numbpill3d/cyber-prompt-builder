@@ -8,75 +8,52 @@ import { modeService } from '@/services/mode/mode-service';
 import { Mode } from '@/services/mode/mode-types';
 import CustomModeEditor from '@/components/CustomModeEditor';
 import ModeDocumentation from '@/components/ModeDocumentation';
-import ModeAnalyticsDashboard from '@/components/ModeAnalyticsDashboard';
-import ModeSharingDialog from '@/components/ModeSharingDialog';
-import ModeTemplatesDialog from '@/components/ModeTemplatesDialog';
 import { toast } from '@/hooks/use-toast';
 
 const ModeSettings: React.FC = () => {
   const [modes, setModes] = useState<Mode[]>([]);
   const [activeMode, setActiveMode] = useState<string>('');
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isSharingOpen, setIsSharingOpen] = useState(false);
-  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [editingMode, setEditingMode] = useState<Mode | undefined>(undefined);
-  const [sharingMode, setSharingMode] = useState<Mode | undefined>(undefined);
-
+  
   // Load modes on component mount
   useEffect(() => {
     const loadModes = () => {
       const allModes = modeService.getAllModes();
       setModes(allModes);
-
+      
       const activeModeId = modeService.getActiveModeId();
       setActiveMode(activeModeId);
     };
-
+    
     loadModes();
-
+    
     // Subscribe to mode changes
     const handleModeChange = (event: any) => {
       setActiveMode(event.currentMode);
       loadModes();
     };
-
+    
     modeService.onModeChange(handleModeChange);
-
+    
     // Cleanup subscription on unmount
     return () => {
       modeService.offModeChange(handleModeChange);
     };
   }, []);
-
+  
   // Handle creating a custom mode
   const handleCreateMode = () => {
     setEditingMode(undefined);
     setIsEditorOpen(true);
   };
-
-  // Handle creating a mode from template
-  const handleCreateFromTemplate = () => {
-    setIsTemplatesOpen(true);
-  };
-
+  
   // Handle editing a mode
   const handleEditMode = (mode: Mode) => {
     setEditingMode(mode);
     setIsEditorOpen(true);
   };
-
-  // Handle sharing a mode
-  const handleShareMode = (mode: Mode) => {
-    setSharingMode(mode);
-    setIsSharingOpen(true);
-  };
-
-  // Handle importing a mode
-  const handleImportMode = () => {
-    setSharingMode(undefined);
-    setIsSharingOpen(true);
-  };
-
+  
   // Handle deleting a mode
   const handleDeleteMode = (modeId: string) => {
     try {
@@ -87,7 +64,7 @@ const ModeSettings: React.FC = () => {
             title: 'Mode deleted',
             description: 'The custom mode has been deleted.',
           });
-
+          
           // Refresh modes list
           const allModes = modeService.getAllModes();
           setModes(allModes);
@@ -102,7 +79,7 @@ const ModeSettings: React.FC = () => {
       });
     }
   };
-
+  
   // Handle activating a mode
   const handleActivateMode = (modeId: string) => {
     try {
@@ -123,17 +100,7 @@ const ModeSettings: React.FC = () => {
       });
     }
   };
-
-  // Handle mode creation from template
-  const handleModeCreatedFromTemplate = (modeId: string) => {
-    // Refresh modes list
-    const allModes = modeService.getAllModes();
-    setModes(allModes);
-
-    // Activate the new mode
-    handleActivateMode(modeId);
-  };
-
+  
   return (
     <MainLayout
       header={
@@ -142,32 +109,20 @@ const ModeSettings: React.FC = () => {
             <Icons.Settings className="h-5 w-5" />
             <h1 className="text-xl font-semibold">Mode Settings</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleImportMode}>
-              <Icons.Download className="h-4 w-4 mr-2" />
-              Import Mode
-            </Button>
-            <Button variant="outline" onClick={handleCreateFromTemplate}>
-              <Icons.LayoutTemplate className="h-4 w-4 mr-2" />
-              From Template
-            </Button>
-            <Button onClick={handleCreateMode}>
-              <Icons.Plus className="h-4 w-4 mr-2" />
-              Create Mode
-            </Button>
-          </div>
+          <Button onClick={handleCreateMode}>
+            <Icons.Plus className="h-4 w-4 mr-2" />
+            Create Mode
+          </Button>
         </MainHeader>
       }
     >
       <div className="container mx-auto py-6">
         <Tabs defaultValue="modes" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="modes">Manage Modes</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="documentation">Documentation</TabsTrigger>
           </TabsList>
-
+          
           <TabsContent value="modes" className="space-y-6">
             <Card>
               <CardHeader>
@@ -181,9 +136,9 @@ const ModeSettings: React.FC = () => {
                   {modes
                     .filter(mode => !mode.isCustom)
                     .map(mode => (
-                      <ModeCard
-                        key={mode.id}
-                        mode={mode}
+                      <ModeCard 
+                        key={mode.id} 
+                        mode={mode} 
                         isActive={activeMode === mode.id}
                         onActivate={handleActivateMode}
                         onEdit={handleEditMode}
@@ -194,7 +149,7 @@ const ModeSettings: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
+            
             <Card>
               <CardHeader>
                 <CardTitle>Custom Modes</CardTitle>
@@ -208,9 +163,9 @@ const ModeSettings: React.FC = () => {
                     {modes
                       .filter(mode => mode.isCustom)
                       .map(mode => (
-                        <ModeCard
-                          key={mode.id}
-                          mode={mode}
+                        <ModeCard 
+                          key={mode.id} 
+                          mode={mode} 
                           isActive={activeMode === mode.id}
                           onActivate={handleActivateMode}
                           onEdit={handleEditMode}
@@ -223,8 +178,8 @@ const ModeSettings: React.FC = () => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Icons.Plus className="h-8 w-8 mx-auto mb-4 opacity-50" />
                     <p>You haven't created any custom modes yet.</p>
-                    <Button
-                      variant="outline"
+                    <Button 
+                      variant="outline" 
                       className="mt-4"
                       onClick={handleCreateMode}
                     >
@@ -235,14 +190,14 @@ const ModeSettings: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
+          
           <TabsContent value="documentation">
             <ModeDocumentation />
           </TabsContent>
         </Tabs>
       </div>
-
-      <CustomModeEditor
+      
+      <CustomModeEditor 
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
         editMode={editingMode}
@@ -256,16 +211,14 @@ interface ModeCardProps {
   isActive: boolean;
   onActivate: (modeId: string) => void;
   onEdit: (mode: Mode) => void;
-  onShare: (mode: Mode) => void;
   onDelete: (modeId: string) => void;
 }
 
-const ModeCard: React.FC<ModeCardProps> = ({
-  mode,
+const ModeCard: React.FC<ModeCardProps> = ({ 
+  mode, 
   isActive,
   onActivate,
   onEdit,
-  onShare,
   onDelete
 }) => {
   // Get the icon component
@@ -274,12 +227,12 @@ const ModeCard: React.FC<ModeCardProps> = ({
       const IconComponent = Icons[mode.icon as keyof typeof Icons];
       return <IconComponent className="h-5 w-5" />;
     }
-
+    
     // Default icons based on mode ID
     if (mode.id === 'code') return <Icons.Code className="h-5 w-5" />;
     if (mode.id === 'architect') return <Icons.Building2 className="h-5 w-5" />;
     if (mode.id === 'ask') return <Icons.HelpCircle className="h-5 w-5" />;
-
+    
     // Fallback to first letter
     return (
       <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground">
@@ -287,7 +240,7 @@ const ModeCard: React.FC<ModeCardProps> = ({
       </div>
     );
   };
-
+  
   return (
     <Card className={cn(
       "border",
@@ -312,43 +265,31 @@ const ModeCard: React.FC<ModeCardProps> = ({
         </div>
       </CardContent>
       <div className="px-6 pb-4 pt-0 flex justify-between">
-        <Button
-          variant="outline"
+        <Button 
+          variant="outline" 
           size="sm"
           onClick={() => onActivate(mode.id)}
           disabled={isActive}
         >
           {isActive ? 'Active' : 'Activate'}
         </Button>
-
+        
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
             onClick={() => onEdit(mode)}
-            title="Edit Mode"
           >
             <Icons.Edit className="h-4 w-4" />
           </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onShare(mode)}
-            title="Share Mode"
-          >
-            <Icons.Share className="h-4 w-4" />
-          </Button>
-
+          
           {mode.isCustom && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => onDelete(mode.id)}
-              title="Delete Mode"
             >
               <Icons.Trash className="h-4 w-4" />
             </Button>

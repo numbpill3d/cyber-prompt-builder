@@ -256,7 +256,6 @@ interface ModeCardProps {
   isActive: boolean;
   onActivate: (modeId: string) => void;
   onEdit: (mode: Mode) => void;
-  onShare: (mode: Mode) => void;
   onDelete: (modeId: string) => void;
 }
 
@@ -265,7 +264,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
   isActive,
   onActivate,
   onEdit,
-  onShare,
   onDelete
 }) => {
   // Get the icon component

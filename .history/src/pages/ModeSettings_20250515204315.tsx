@@ -265,7 +265,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
   isActive,
   onActivate,
   onEdit,
-  onShare,
   onDelete
 }) => {
   // Get the icon component

@@ -54,27 +54,10 @@ const ModeSettings: React.FC = () => {
     setIsEditorOpen(true);
   };
 
-  // Handle creating a mode from template
-  const handleCreateFromTemplate = () => {
-    setIsTemplatesOpen(true);
-  };
-
   // Handle editing a mode
   const handleEditMode = (mode: Mode) => {
     setEditingMode(mode);
     setIsEditorOpen(true);
-  };
-
-  // Handle sharing a mode
-  const handleShareMode = (mode: Mode) => {
-    setSharingMode(mode);
-    setIsSharingOpen(true);
-  };
-
-  // Handle importing a mode
-  const handleImportMode = () => {
-    setSharingMode(undefined);
-    setIsSharingOpen(true);
   };
 
   // Handle deleting a mode
@@ -124,16 +107,6 @@ const ModeSettings: React.FC = () => {
     }
   };
 
-  // Handle mode creation from template
-  const handleModeCreatedFromTemplate = (modeId: string) => {
-    // Refresh modes list
-    const allModes = modeService.getAllModes();
-    setModes(allModes);
-
-    // Activate the new mode
-    handleActivateMode(modeId);
-  };
-
   return (
     <MainLayout
       header={
@@ -142,29 +115,17 @@ const ModeSettings: React.FC = () => {
             <Icons.Settings className="h-5 w-5" />
             <h1 className="text-xl font-semibold">Mode Settings</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleImportMode}>
-              <Icons.Download className="h-4 w-4 mr-2" />
-              Import Mode
-            </Button>
-            <Button variant="outline" onClick={handleCreateFromTemplate}>
-              <Icons.LayoutTemplate className="h-4 w-4 mr-2" />
-              From Template
-            </Button>
-            <Button onClick={handleCreateMode}>
-              <Icons.Plus className="h-4 w-4 mr-2" />
-              Create Mode
-            </Button>
-          </div>
+          <Button onClick={handleCreateMode}>
+            <Icons.Plus className="h-4 w-4 mr-2" />
+            Create Mode
+          </Button>
         </MainHeader>
       }
     >
       <div className="container mx-auto py-6">
         <Tabs defaultValue="modes" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="modes">Manage Modes</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="documentation">Documentation</TabsTrigger>
           </TabsList>
 
@@ -256,7 +217,6 @@ interface ModeCardProps {
   isActive: boolean;
   onActivate: (modeId: string) => void;
   onEdit: (mode: Mode) => void;
-  onShare: (mode: Mode) => void;
   onDelete: (modeId: string) => void;
 }
 
@@ -265,7 +225,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
   isActive,
   onActivate,
   onEdit,
-  onShare,
   onDelete
 }) => {
   // Get the icon component
@@ -327,19 +286,8 @@ const ModeCard: React.FC<ModeCardProps> = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => onEdit(mode)}
-            title="Edit Mode"
           >
             <Icons.Edit className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onShare(mode)}
-            title="Share Mode"
-          >
-            <Icons.Share className="h-4 w-4" />
           </Button>
 
           {mode.isCustom && (
@@ -348,7 +296,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => onDelete(mode.id)}
-              title="Delete Mode"
             >
               <Icons.Trash className="h-4 w-4" />
             </Button>

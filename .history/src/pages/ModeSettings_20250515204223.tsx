@@ -256,7 +256,6 @@ interface ModeCardProps {
   isActive: boolean;
   onActivate: (modeId: string) => void;
   onEdit: (mode: Mode) => void;
-  onShare: (mode: Mode) => void;
   onDelete: (modeId: string) => void;
 }
 
@@ -265,7 +264,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
   isActive,
   onActivate,
   onEdit,
-  onShare,
   onDelete
 }) => {
   // Get the icon component
@@ -327,19 +325,8 @@ const ModeCard: React.FC<ModeCardProps> = ({
             size="icon"
             className="h-8 w-8"
             onClick={() => onEdit(mode)}
-            title="Edit Mode"
           >
             <Icons.Edit className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onShare(mode)}
-            title="Share Mode"
-          >
-            <Icons.Share className="h-4 w-4" />
           </Button>
 
           {mode.isCustom && (
@@ -348,7 +335,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
               size="icon"
               className="h-8 w-8 text-destructive"
               onClick={() => onDelete(mode.id)}
-              title="Delete Mode"
             >
               <Icons.Trash className="h-4 w-4" />
             </Button>
