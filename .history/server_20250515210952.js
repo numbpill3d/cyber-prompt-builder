@@ -28,45 +28,10 @@ app.use((req, res, next) => {
 
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
-  // Check if dist directory and index.html exist
-  const distPath = path.join(__dirname, 'dist');
-  const indexPath = path.join(distPath, 'index.html');
-  const distExists = fs.existsSync(distPath);
-  const indexExists = distExists && fs.existsSync(indexPath);
-
-  // Get list of files in dist directory if it exists
-  let distFiles = [];
-  if (distExists) {
-    try {
-      distFiles = fs.readdirSync(distPath);
-    } catch (error) {
-      console.error('Error reading dist directory:', error);
-    }
-  }
-
-  // Get environment variables (excluding sensitive ones)
-  const envVars = {};
-  Object.keys(process.env).forEach(key => {
-    if (key.startsWith('REACT_APP_') &&
-        !key.includes('KEY') &&
-        !key.includes('SECRET') &&
-        !key.includes('TOKEN')) {
-      envVars[key] = process.env[key];
-    }
-  });
-
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    environment: process.env.REACT_APP_APP_ENVIRONMENT || 'production',
-    node_version: process.version,
-    server_info: {
-      dist_directory_exists: distExists,
-      index_html_exists: indexExists,
-      dist_files: distFiles,
-      current_directory: __dirname
-    },
-    env: envVars
+    environment: process.env.REACT_APP_APP_ENVIRONMENT || 'production'
   });
 });
 
@@ -102,9 +67,8 @@ try {
   console.error('Error checking dist directory:', error);
 }
 
-// Serve static files from the dist and public directories
+// Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Log all incoming requests
 app.use((req, res, next) => {
@@ -115,39 +79,15 @@ app.use((req, res, next) => {
 // For any other request, send the index.html file
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
-  const errorPath = path.join(__dirname, 'public', 'error.html');
-  const fallbackPath = path.join(__dirname, 'public', 'index.html');
-
   console.log('Requested path:', req.path);
   console.log('Serving index.html from:', indexPath);
 
-  // Check if the dist/index.html file exists
+  // Check if the file exists
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
-  }
-  // If dist/index.html doesn't exist, try to serve public/error.html
-  else if (fs.existsSync(errorPath)) {
-    console.warn('Main application index.html not found, serving error page');
-    res.sendFile(errorPath);
-  }
-  // If public/error.html doesn't exist, try to serve public/index.html
-  else if (fs.existsSync(fallbackPath)) {
-    console.warn('Main application and error page not found, serving fallback page');
-    res.sendFile(fallbackPath);
-  }
-  // If none of the above exist, return a simple error message
-  else {
-    console.error('No index.html or fallback pages found');
-    res.status(404).send(`
-      <html>
-        <head><title>Application Error</title></head>
-        <body>
-          <h1>Application Error</h1>
-          <p>The application files were not found. The application may not be built correctly.</p>
-          <p>Server time: ${new Date().toISOString()}</p>
-        </body>
-      </html>
-    `);
+  } else {
+    console.error('index.html not found at path:', indexPath);
+    res.status(404).send('Application files not found. The application may not be built correctly.');
   }
 });
 

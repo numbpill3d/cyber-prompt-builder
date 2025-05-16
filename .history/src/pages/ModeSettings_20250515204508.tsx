@@ -323,18 +323,6 @@ const ModeSettings: React.FC = () => {
         onClose={() => setIsEditorOpen(false)}
         editMode={editingMode}
       />
-
-      <ModeSharingDialog
-        isOpen={isSharingOpen}
-        onClose={() => setIsSharingOpen(false)}
-        mode={sharingMode}
-      />
-
-      <ModeTemplatesDialog
-        isOpen={isTemplatesOpen}
-        onClose={() => setIsTemplatesOpen(false)}
-        onModeCreated={handleModeCreatedFromTemplate}
-      />
     </MainLayout>
   );
 };

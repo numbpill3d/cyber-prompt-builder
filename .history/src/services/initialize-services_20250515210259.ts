@@ -35,9 +35,6 @@ export const initializeServices = async (): Promise<void> => {
     // Initialize mode system
     await initializeMode();
 
-    // Initialize file system and terminal services
-    await initializeFileSystemAndTerminal();
-
     logger.info('Services initialized successfully');
   } catch (error) {
     console.error('Failed to initialize services:', error);
@@ -167,33 +164,5 @@ const initializeMode = async (): Promise<void> => {
   }
 };
 
-/**
- * Initialize file system and terminal services
- */
-const initializeFileSystemAndTerminal = async (): Promise<void> => {
-  try {
-    logger.info('Initializing file system and terminal services');
-
-    // Initialize file system service
-    await fileSystemService.initialize();
-    registerService('fileSystemService', fileSystemService);
-    logger.info('File system service initialized');
-
-    // Initialize terminal service
-    await terminalService.initialize();
-    registerService('terminalService', terminalService);
-    logger.info('Terminal service initialized');
-  } catch (error) {
-    logger.error('Failed to initialize file system and terminal services', { error });
-    throw error;
-  }
-};
-
 // Export individual initialization functions for testing
-export {
-  initializeConfig,
-  initializeLogging,
-  initializeErrorHandling,
-  initializeMode,
-  initializeFileSystemAndTerminal
-};
+export { initializeConfig, initializeLogging, initializeErrorHandling, initializeMode };

@@ -115,39 +115,15 @@ app.use((req, res, next) => {
 // For any other request, send the index.html file
 app.get('*', (req, res) => {
   const indexPath = path.join(__dirname, 'dist', 'index.html');
-  const errorPath = path.join(__dirname, 'public', 'error.html');
-  const fallbackPath = path.join(__dirname, 'public', 'index.html');
-
   console.log('Requested path:', req.path);
   console.log('Serving index.html from:', indexPath);
 
-  // Check if the dist/index.html file exists
+  // Check if the file exists
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
-  }
-  // If dist/index.html doesn't exist, try to serve public/error.html
-  else if (fs.existsSync(errorPath)) {
-    console.warn('Main application index.html not found, serving error page');
-    res.sendFile(errorPath);
-  }
-  // If public/error.html doesn't exist, try to serve public/index.html
-  else if (fs.existsSync(fallbackPath)) {
-    console.warn('Main application and error page not found, serving fallback page');
-    res.sendFile(fallbackPath);
-  }
-  // If none of the above exist, return a simple error message
-  else {
-    console.error('No index.html or fallback pages found');
-    res.status(404).send(`
-      <html>
-        <head><title>Application Error</title></head>
-        <body>
-          <h1>Application Error</h1>
-          <p>The application files were not found. The application may not be built correctly.</p>
-          <p>Server time: ${new Date().toISOString()}</p>
-        </body>
-      </html>
-    `);
+  } else {
+    console.error('index.html not found at path:', indexPath);
+    res.status(404).send('Application files not found. The application may not be built correctly.');
   }
 });
 

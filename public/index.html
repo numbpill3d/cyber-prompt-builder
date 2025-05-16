@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallback Index</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .warning {
+            color: #856404;
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 20px;
+        }
+        .info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cyber Prompt Builder</h1>
+        <div class="warning">
+            <strong>Note:</strong> You are seeing this fallback page because the main application failed to load.
+        </div>
+        <p>This is a fallback index.html file from the public directory. If you're seeing this page, it means:</p>
+        <ol>
+            <li>The server is running correctly and can serve static files</li>
+            <li>The main application build in the dist directory either doesn't exist or has issues</li>
+        </ol>
+        <div class="info">
+            <p><strong>Server Information:</strong></p>
+            <p>Timestamp: <span id="timestamp"></span></p>
+            <p>Path: <span id="path"></span></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+        document.getElementById('path').textContent = window.location.pathname;
+    </script>
+</body>
+</html>

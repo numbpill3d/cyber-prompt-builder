@@ -84,9 +84,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       case 'SETTINGS':
         navigate('/settings');
         break;
-      case 'DEV_TOOLS':
-        navigate('/dev-tools');
-        break;
       // Add other routes as needed
       default:
         navigate('/');
@@ -128,12 +125,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           label="SETTINGS"
           active={activeItem === 'SETTINGS'}
           onClick={() => handleItemClick('SETTINGS')}
-        />
-        <SidebarItem
-          icon={Terminal}
-          label="DEV TOOLS"
-          active={activeItem === 'DEV_TOOLS'}
-          onClick={() => handleItemClick('DEV_TOOLS')}
         />
       </div>
 

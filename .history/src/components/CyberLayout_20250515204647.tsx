@@ -198,9 +198,6 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
 
             <PromptInput onGenerate={handleGenerateCode} isLoading={isGenerating} />
 
-            {/* Mode Suggestions */}
-            <ModeSuggestions input={generatedFromPrompt} className="mt-2" />
-
             <div className="flex flex-col gap-3">
               <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
                 <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>

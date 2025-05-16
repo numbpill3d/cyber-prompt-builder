@@ -238,80 +238,6 @@ const ModeSettings: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <ModeAnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="templates">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold tracking-tight">Mode Templates</h2>
-                <Button onClick={handleCreateFromTemplate}>
-                  <Icons.Plus className="h-4 w-4 mr-2" />
-                  Create From Template
-                </Button>
-              </div>
-
-              <p className="text-muted-foreground">
-                Templates provide pre-configured modes for specific tasks. Choose a template to quickly create a specialized mode.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                {/* Template cards would be rendered here */}
-                <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icons.Shield className="h-5 w-5" />
-                      Security Expert
-                    </CardTitle>
-                    <CardDescription>
-                      Focuses on application security and best practices
-                    </CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="outline" size="sm" className="w-full" onClick={handleCreateFromTemplate}>
-                      Use Template
-                    </Button>
-                  </CardFooter>
-                </Card>
-
-                <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icons.Zap className="h-5 w-5" />
-                      Performance Optimizer
-                    </CardTitle>
-                    <CardDescription>
-                      Specializes in optimizing code and system performance
-                    </CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="outline" size="sm" className="w-full" onClick={handleCreateFromTemplate}>
-                      Use Template
-                    </Button>
-                  </CardFooter>
-                </Card>
-
-                <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icons.FileText className="h-5 w-5" />
-                      Documentation Writer
-                    </CardTitle>
-                    <CardDescription>
-                      Creates clear, comprehensive documentation
-                    </CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button variant="outline" size="sm" className="w-full" onClick={handleCreateFromTemplate}>
-                      Use Template
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
           <TabsContent value="documentation">
             <ModeDocumentation />
           </TabsContent>
@@ -322,18 +248,6 @@ const ModeSettings: React.FC = () => {
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
         editMode={editingMode}
-      />
-
-      <ModeSharingDialog
-        isOpen={isSharingOpen}
-        onClose={() => setIsSharingOpen(false)}
-        mode={sharingMode}
-      />
-
-      <ModeTemplatesDialog
-        isOpen={isTemplatesOpen}
-        onClose={() => setIsTemplatesOpen(false)}
-        onModeCreated={handleModeCreatedFromTemplate}
       />
     </MainLayout>
   );

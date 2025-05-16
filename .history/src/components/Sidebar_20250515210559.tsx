@@ -129,12 +129,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           active={activeItem === 'SETTINGS'}
           onClick={() => handleItemClick('SETTINGS')}
         />
-        <SidebarItem
-          icon={Terminal}
-          label="DEV TOOLS"
-          active={activeItem === 'DEV_TOOLS'}
-          onClick={() => handleItemClick('DEV_TOOLS')}
-        />
       </div>
 
       <div className="pb-4 flex flex-col items-center">
