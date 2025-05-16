@@ -186,13 +186,12 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
                 activeMode?.id === mode.id && "bg-accent text-accent-foreground"
               )}
             >
-              {getModeIcon(mode)}
-              <span>{mode.name}</span>
-              {mode.description && (
-                <span className="ml-auto text-xs text-muted-foreground truncate max-w-[100px]">
-                  {mode.description}
-                </span>
+              {modeIcons[mode.id] || (
+                <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground">
+                  {mode.name.charAt(0)}
+                </div>
               )}
+              <span>{mode.name}</span>
             </DropdownMenuItem>
           ))
         }
@@ -206,47 +205,19 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
             {availableModes
               .filter(mode => mode.isCustom)
               .map(mode => (
-                <div key={mode.id} className="relative group">
-                  <DropdownMenuItem
-                    onClick={() => handleSelectMode(mode.id)}
-                    className={cn(
-                      "gap-2 pr-10",
-                      activeMode?.id === mode.id && "bg-accent text-accent-foreground"
-                    )}
-                  >
-                    {getModeIcon(mode)}
-                    <span>{mode.name}</span>
-                    {mode.description && (
-                      <span className="ml-auto text-xs text-muted-foreground truncate max-w-[80px]">
-                        {mode.description}
-                      </span>
-                    )}
-                  </DropdownMenuItem>
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditMode(mode);
-                      }}
-                    >
-                      <Icons.Edit className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteMode(mode.id);
-                      }}
-                    >
-                      <Icons.Trash className="h-3 w-3" />
-                    </Button>
+                <DropdownMenuItem
+                  key={mode.id}
+                  onClick={() => handleSelectMode(mode.id)}
+                  className={cn(
+                    "gap-2",
+                    activeMode?.id === mode.id && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  <div className="h-4 w-4 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground">
+                    {mode.name.charAt(0)}
                   </div>
-                </div>
+                  <span>{mode.name}</span>
+                </DropdownMenuItem>
               ))
             }
           </>
@@ -256,7 +227,7 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
 
         {/* Create custom mode option */}
         <DropdownMenuItem onClick={handleCreateCustomMode} className="gap-2">
-          <Icons.Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
           <span>Create Custom Mode</span>
         </DropdownMenuItem>
 
@@ -265,17 +236,10 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
           onClick={() => window.location.href = '/settings?tab=modes'}
           className="gap-2"
         >
-          <Icons.Settings className="h-4 w-4" />
+          <Settings className="h-4 w-4" />
           <span>Mode Settings</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
-
-      {/* Custom Mode Editor Dialog */}
-      <CustomModeEditor
-        isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
-        editMode={editingMode}
-      />
     </DropdownMenu>
   );
 };

@@ -199,12 +199,7 @@ Focus on writing clean, maintainable, and efficient code.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -224,12 +219,7 @@ Focus on system design, architecture, and structure.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -249,12 +239,7 @@ Focus on explaining concepts and answering questions clearly.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -274,12 +259,7 @@ Focus on deployment, infrastructure, and automation.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -299,12 +279,7 @@ Focus on identifying and fixing issues.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -324,12 +299,7 @@ Focus on testing and quality assurance.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -379,7 +349,7 @@ export function getModeUserPreferences(modeId?: string): {
 
   if (!mode) {
     return {
-      tone: ResponseTone.TECHNICAL, // Default to TECHNICAL instead of BALANCED
+      tone: ResponseTone.BALANCED,
       format: ResponseFormat.DEFAULT,
       includeExplanations: true,
       includeExamples: false

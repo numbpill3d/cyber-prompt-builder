@@ -83,47 +83,5 @@ export const DEFAULT_MODES: Record<string, Mode> = {
       includeExamples: true,
       customInstructions: 'Provide thorough explanations with examples when possible. Break down complex concepts into simpler parts.'
     }
-  },
-  devops: {
-    id: 'devops',
-    name: 'DevOps Mode',
-    description: 'For deployment, CI/CD, and infrastructure tasks',
-    icon: 'Server',
-    systemPrompt: 'You are a DevOps specialist focused on deployment, infrastructure, CI/CD pipelines, and cloud services. Prioritize reliability, security, and automation.',
-    userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
-      includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Provide detailed configuration examples and explain infrastructure decisions. Focus on security best practices and automation.'
-    }
-  },
-  debug: {
-    id: 'debug',
-    name: 'Debug Mode',
-    description: 'For troubleshooting and fixing issues',
-    icon: 'Bug',
-    systemPrompt: 'You are a debugging expert specializing in identifying and fixing software issues. Focus on systematic problem-solving, root cause analysis, and effective solutions.',
-    userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
-      includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Analyze problems methodically, suggest debugging strategies, and provide fixes with explanations of the underlying issues.'
-    }
-  },
-  test: {
-    id: 'test',
-    name: 'Test Mode',
-    description: 'For writing tests and QA activities',
-    icon: 'TestTube',
-    systemPrompt: 'You are a testing specialist focused on creating comprehensive test suites, test strategies, and quality assurance processes. Prioritize test coverage, edge cases, and test maintainability.',
-    userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
-      includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Create thorough test cases covering edge cases and failure scenarios. Explain testing strategies and methodologies.'
-    }
   }
 };

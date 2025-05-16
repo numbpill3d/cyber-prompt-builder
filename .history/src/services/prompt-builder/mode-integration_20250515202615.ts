@@ -379,7 +379,7 @@ export function getModeUserPreferences(modeId?: string): {
 
   if (!mode) {
     return {
-      tone: ResponseTone.TECHNICAL, // Default to TECHNICAL instead of BALANCED
+      tone: ResponseTone.BALANCED,
       format: ResponseFormat.DEFAULT,
       includeExplanations: true,
       includeExamples: false

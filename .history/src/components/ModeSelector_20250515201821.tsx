@@ -256,7 +256,7 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
 
         {/* Create custom mode option */}
         <DropdownMenuItem onClick={handleCreateCustomMode} className="gap-2">
-          <Icons.Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
           <span>Create Custom Mode</span>
         </DropdownMenuItem>
 
@@ -265,17 +265,10 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ className }) => {
           onClick={() => window.location.href = '/settings?tab=modes'}
           className="gap-2"
         >
-          <Icons.Settings className="h-4 w-4" />
+          <Settings className="h-4 w-4" />
           <span>Mode Settings</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
-
-      {/* Custom Mode Editor Dialog */}
-      <CustomModeEditor
-        isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
-        editMode={editingMode}
-      />
     </DropdownMenu>
   );
 };

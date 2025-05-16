@@ -98,45 +98,31 @@ export function buildModeAwarePrompt(options: {
   // Create task instruction
   const taskId = createModeAwareTaskInstruction(options.taskInstruction);
 
-  // Get the task layer
-  const taskLayer = builder.getLayer(taskId);
-  if (taskLayer) {
-    // Add language-specific context if provided
-    if (options.language) {
-      const currentContent = taskLayer.getContent();
-      const updatedContent = `${currentContent}\n\nTarget language: ${options.language}`;
-      taskLayer.setContent(updatedContent);
-    }
+  // Add language-specific context if provided
+  if (options.language) {
+    const currentContent = builder.getLayerContent(taskId);
+    const updatedContent = `${currentContent}\n\nTarget language: ${options.language}`;
+    builder.setLayerContent(taskId, updatedContent);
+  }
 
-    // Add framework-specific context if provided
-    if (options.targetFramework) {
-      const currentContent = taskLayer.getContent();
-      const updatedContent = `${currentContent}\n\nTarget framework: ${options.targetFramework}`;
-      taskLayer.setContent(updatedContent);
-    }
+  // Add framework-specific context if provided
+  if (options.targetFramework) {
+    const currentContent = builder.getLayerContent(taskId);
+    const updatedContent = `${currentContent}\n\nTarget framework: ${options.targetFramework}`;
+    builder.setLayerContent(taskId, updatedContent);
   }
 
   // Add code context if provided
   if (options.codeContext) {
     const contextId = builder.createLayer('code_context',
       `Relevant code context:\n\`\`\`\n${options.codeContext}\n\`\`\``);
-
-    // Set priority through the layer API
-    const contextLayer = builder.getLayer(contextId);
-    if (contextLayer) {
-      contextLayer.update({ priority: LayerPriority.HIGH });
-    }
+    builder.setLayerPriority(contextId, 60); // Higher priority than general context
   }
 
   // Add additional context if provided
   if (options.additionalContext) {
     const contextId = builder.createLayer('context', options.additionalContext);
-
-    // Set priority through the layer API
-    const contextLayer = builder.getLayer(contextId);
-    if (contextLayer) {
-      contextLayer.update({ priority: LayerPriority.MEDIUM });
-    }
+    builder.setLayerPriority(contextId, 50); // Medium priority
   }
 
   // Add mode-specific behavior instructions
@@ -166,12 +152,7 @@ export function buildModeAwarePrompt(options: {
         if (activeMode.customSettings?.behaviorInstructions) {
           const behaviorId = builder.createLayer('behavior',
             activeMode.customSettings.behaviorInstructions);
-
-          // Set priority through the layer API
-          const behaviorLayer = builder.getLayer(behaviorId);
-          if (behaviorLayer) {
-            behaviorLayer.update({ priority: LayerPriority.CRITICAL });
-          }
+          builder.setLayerPriority(behaviorId, 70); // High priority
         }
     }
   }
@@ -199,12 +180,7 @@ Focus on writing clean, maintainable, and efficient code.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -224,12 +200,7 @@ Focus on system design, architecture, and structure.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -249,12 +220,7 @@ Focus on explaining concepts and answering questions clearly.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -274,12 +240,7 @@ Focus on deployment, infrastructure, and automation.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -299,12 +260,7 @@ Focus on identifying and fixing issues.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -324,12 +280,7 @@ Focus on testing and quality assurance.
 `;
 
   const behaviorId = builder.createLayer('behavior', instructions);
-  const layer = builder.getLayer(behaviorId);
-  if (layer) {
-    layer.setContent(instructions);
-    // Use type assertion to access the update method
-    (layer as any).update?.({ priority: LayerPriority.HIGH });
-  }
+  builder.setLayerPriority(behaviorId, 70); // High priority
 }
 
 /**
@@ -379,7 +330,7 @@ export function getModeUserPreferences(modeId?: string): {
 
   if (!mode) {
     return {
-      tone: ResponseTone.TECHNICAL, // Default to TECHNICAL instead of BALANCED
+      tone: ResponseTone.BALANCED,
       format: ResponseFormat.DEFAULT,
       includeExplanations: true,
       includeExamples: false
