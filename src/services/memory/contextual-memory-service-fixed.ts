@@ -2,9 +2,7 @@
  * Contextual Memory Service
  * Learns from user patterns, preferences, and coding habits to provide intelligent suggestions
  */
-
 import { MemoryEntry, MemoryMetadata, MemoryType, MemorySearchParams } from './memory-types';
-import { BaseMemoryService } from './memory-service';
 
 export interface UserPattern {
   id: string;
@@ -36,13 +34,15 @@ export interface LearningContext {
 /**
  * Contextual Memory Service that learns and adapts
  */
-export class ContextualMemoryService extends BaseMemoryService {
+export class ContextualMemoryService {
   private patterns: Map<string, UserPattern> = new Map();
   private learningHistory: LearningContext[] = [];
   private insights: ContextualInsight[] = [];
+  private memoryService: BaseMemoryService; // Injected or passed in
 
-  constructor(config = {}) {
-    super(config);
+  constructor(memoryService: BaseMemoryService, config = {}) {
+    // super(config); // No longer extends BaseMemoryService
+    this.memoryService = memoryService;
     this.loadPatterns();
   }
 
@@ -108,7 +108,7 @@ export class ContextualMemoryService extends BaseMemoryService {
       .sort((a, b) => b.frequency - a.frequency);
     
     // Search for relevant code memories
-    const codeMemories = await this.searchMemories('code', {
+    const codeMemories = await this.memoryService.searchMemories('code', {
       query: context,
       types: [MemoryType.CODE],
       maxResults: 10
@@ -138,7 +138,7 @@ export class ContextualMemoryService extends BaseMemoryService {
     confidence: number;
     suggestions: string[];
   }> {
-    const sessionMemories = await this.getSessionMemories(sessionId);
+    const sessionMemories = await this.memoryService.getSessionMemories(sessionId);
     const recentPatterns = this.getRecentPatterns();
     
     // Analyze partial input
@@ -460,7 +460,7 @@ export class ContextualMemoryService extends BaseMemoryService {
   }
 
   private async findSimilarInteractions(input: string, sessionId: string): Promise<MemoryEntry[]> {
-    return this.searchMemories('context', {
+    return this.memoryService.searchMemories('context', {
       query: input,
       sessionId,
       maxResults: 5
@@ -572,7 +572,7 @@ export class ContextualMemoryService extends BaseMemoryService {
     // Persist patterns to memory
     try {
       const patternsData = JSON.stringify(Array.from(this.patterns.entries()));
-      await this.addMemory('context', patternsData, {
+      await this.memoryService.addMemory('context', patternsData, {
         type: MemoryType.METADATA,
         source: 'contextual_learning',
         tags: ['patterns', 'learning']
@@ -595,30 +595,15 @@ export class ContextualMemoryService extends BaseMemoryService {
     }
   }
 
-  // Abstract method implementations (delegated to ChromaMemoryProvider)
+  // These methods are no longer needed here as it doesn't extend BaseMemoryService
+  /*
   async initialize(): Promise<void> {
-    // Implementation will be provided by the enhanced ChromaMemoryProvider
-    throw new Error('Method should be implemented by concrete provider');
+    // Initialization logic if any, or rely on constructor
   }
 
   async shutdown(): Promise<void> {
     // Save patterns before shutdown
-    try {
-      localStorage.setItem('user_patterns', JSON.stringify(Array.from(this.patterns.entries())));
-    } catch (error) {
-      console.error('Failed to save patterns:', error);
-    }
+    // Persist patterns if needed, e.g. via this.persistLearning() or specific save method
   }
-
-  // Other abstract methods will be implemented by the enhanced provider
-  async createCollection(): Promise<void> { throw new Error('Not implemented'); }
-  async deleteCollection(): Promise<boolean> { throw new Error('Not implemented'); }
-  async listCollections(): Promise<string[]> { throw new Error('Not implemented'); }
-  async getCollectionInfo(): Promise<any> { throw new Error('Not implemented'); }
-  async addMemory(): Promise<MemoryEntry> { throw new Error('Not implemented'); }
-  async getMemory(): Promise<MemoryEntry | null> { throw new Error('Not implemented'); }
-  async updateMemory(): Promise<MemoryEntry | null> { throw new Error('Not implemented'); }
-  async deleteMemory(): Promise<boolean> { throw new Error('Not implemented'); }
-  async searchMemories(): Promise<any> { throw new Error('Not implemented'); }
-  async embedText(): Promise<number[]> { throw new Error('Not implemented'); }
+  */
 }

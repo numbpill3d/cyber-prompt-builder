@@ -96,42 +96,30 @@ export async function initializeServices(): Promise<void> {
 import { getService } from '../core/services/service-locator';
 
 export function getConversationService(): ConversationManager {
-  const service = createConversationService();
-  registerService('conversationManager', service);
-  return service;
+  return getService<ConversationManager>('conversationManager');
 }
 
 export function getTTSService(): TTSService {
-  const service = createTTSService();
-  registerService('ttsService', service);
-  return service;
+  return getService<TTSService>('ttsService');
 }
 
 export function getEvolutionService(): EvolutionEngine {
-  const service = createEvolutionService();
-  registerService('evolutionEngine', service);
-  return service;
+  return getService<EvolutionEngine>('evolutionEngine');
 }
 
 export function getAutoImprovementService(): AutoImprovementSystem {
-  const service = createAutoImprovementService();
-  registerService('autoImprovementSystem', service);
-  return service;
+  return getService<AutoImprovementSystem>('autoImprovementSystem');
 }
 
 export function getSettingsService(): SettingsManager {
-  const service = createSettingsService();
-  registerService('settingsManager', service);
-  return service;
+  return getService<SettingsManager>('settingsManager');
 }
 
 /**
  * Get the PromptBuilder service
  */
 export function getPromptBuilderService(): PromptBuilderService {
-  const service = createPromptBuilderService();
-  registerService('promptBuilderService', service);
-  return service;
+  return getService<PromptBuilderService>('promptBuilderService');
 }
 
 /**

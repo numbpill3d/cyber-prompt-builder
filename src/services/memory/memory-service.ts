@@ -171,19 +171,30 @@ export abstract class BaseMemoryService implements MemoryService {
    */
   async clearSessionMemories(sessionId: string): Promise<boolean> {
     const memories = await this.getSessionMemories(sessionId);
-    const collections = new Set(memories.map(m => m.metadata.sessionId));
-    
-    for (const collection of Array.from(collections)) {
-      if (!collection) continue;
-      
-      const memoriesToDelete = memories.filter(m => m.metadata.sessionId === collection);
-      
-      for (const memory of memoriesToDelete) {
-        await this.deleteMemory(collection, memory.id);
+    let allDeleted = true;
+
+    // Group memories by collection to perform batch deletes if supported, or delete one by one.
+    // For simplicity here, deleting one by one.
+    // This assumes that the `MemoryEntry` does not directly store its collection name,
+    // and `getSessionMemories` has already fetched them from their correct collections.
+    // A more robust solution would involve knowing the collection for each memory.
+    // However, the current `deleteMemory` requires a collection name.
+    // This part highlights a potential design consideration: how to know a memory's parent collection.
+    // For now, we'll assume a convention or that `deleteMemory` can find it by ID if collection is generic.
+    for (const memory of memories) {
+      // We need a way to get the collection name for `memory.id`
+      // This is a simplification; real implementation might need to search or have collection in metadata.
+      // For this example, let's assume a 'default' or that the provider can handle it.
+      // This part of the logic is tricky without knowing how collection mapping is handled.
+      // A practical approach: if MemoryEntry.metadata could store its origin collection.
+      const collectionName = memory.metadata.custom?.collectionName || this.getCollectionForType(memory.metadata.type) || 'default_collection_for_deletion';
+      const deleted = await this.deleteMemory(collectionName, memory.id);
+      if (!deleted) {
+        allDeleted = false;
+        console.warn(`Failed to delete memory ${memory.id} from session ${sessionId} in collection ${collectionName}`);
       }
     }
-    
-    return true;
+    return allDeleted;
   }
   
   /**
@@ -256,6 +267,21 @@ export abstract class BaseMemoryService implements MemoryService {
       avgEmbeddingSize: memories.length > 0 ? totalEmbeddingSize / memories.length : 0,
       types
     };
+  }
+
+  /**
+   * Get the appropriate collection name for a memory type (helper, can be overridden)
+   */
+  protected getCollectionForType(type: MemoryType | string): string {
+    const typeToCollection: Record<string, string> = {
+      [MemoryType.CODE]: 'code',
+      [MemoryType.CHAT]: 'chat',
+      [MemoryType.REFERENCE]: 'reference',
+      [MemoryType.SNIPPET]: 'code', // SNIPPET might go into 'code' collection
+      [MemoryType.FEEDBACK]: 'feedback', // Or 'chat' or a dedicated 'feedback' collection
+      [MemoryType.CONTEXT]: 'context',
+    };
+    return typeToCollection[type] || 'generic_memories'; // Default collection
   }
 }
 
