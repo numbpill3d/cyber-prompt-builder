@@ -12,9 +12,6 @@ import {
   deployCode,
   getSettingsManager
 } from '@/services/aiService';
-import { modeService } from '@/services/mode/mode-service';
-import { buildModeAwarePrompt } from '@/services/prompt-builder/mode-integration';
-import ModeSuggestions from './ModeSuggestions';
 
 interface CyberLayoutProps {
   children?: React.ReactNode;
@@ -25,52 +22,49 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedFromPrompt, setGeneratedFromPrompt] = useState('');
   const [taskId, setTaskId] = useState<string | undefined>(undefined);
-  const [activeProvider, setActiveProvider] = useState('');
-  const [activeMode, setActiveMode] = useState('');
+  const [activeProvider, setActiveProvider] = useState('openai');
+  const [hasApiKey, setHasApiKey] = useState(false);
 
-  // Load settings on initial render
+  // Check for API key on mount and storage changes
   useEffect(() => {
-    const settings = getSettingsManager().getSettings();
-    setActiveProvider(settings.activeProvider);
-
-    // Set active mode
-    const currentMode = modeService.getActiveModeId();
-    setActiveMode(currentMode);
-
-    // Subscribe to mode changes
-    const handleModeChange = (event: any) => {
-      setActiveMode(event.currentMode);
+    const checkApiKey = () => {
+      const apiKey = localStorage.getItem('openai_api_key');
+      setHasApiKey(!!apiKey);
     };
 
-    modeService.onModeChange(handleModeChange);
+    checkApiKey();
+    
+    // Listen for storage changes (when API key is saved)
+    window.addEventListener('storage', checkApiKey);
+    
+    // Also check on focus (when user comes back from getting API key)
+    window.addEventListener('focus', checkApiKey);
 
-    // Cleanup subscription on unmount
     return () => {
-      modeService.offModeChange(handleModeChange);
+      window.removeEventListener('storage', checkApiKey);
+      window.removeEventListener('focus', checkApiKey);
     };
   }, []);
 
   const handleGenerateCode = async (prompt: string) => {
+    if (!hasApiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please configure your OpenAI API key in the settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setGeneratedFromPrompt(prompt);
+    setCode(''); // Clear previous code
 
     try {
-      // Get current settings
-      const settings = getSettingsManager().getSettings();
-      const agentSettings = settings.agent;
-      const provider = settings.activeProvider;
-      const modelSettings = settings.providers[provider as keyof typeof settings.providers];
-
-      // Build mode-aware prompt
-      const enhancedPrompt = buildModeAwarePrompt({
-        taskInstruction: prompt
-      });
-
-      // Generate code using the current settings and enhanced prompt
       const result = await generateCode({
-        prompt: enhancedPrompt,
-        provider,
-        model: modelSettings.preferredModel,
+        prompt,
+        provider: 'openai',
+        model: 'gpt-4',
         temperature: 0.7,
         maxTokens: 4000
       });
@@ -81,24 +75,29 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
           description: result.error,
           variant: "destructive",
         });
-        setCode(""); // Clear previous code on error
+        setCode("");
       } else {
         setCode(result.code);
         setTaskId(result.taskId);
+        
+        const tokenInfo = result.usage 
+          ? ` (${result.usage.total_tokens} tokens used)`
+          : '';
+          
         toast({
-          title: "Code Generated",
-          description: `Successfully generated with ${provider} provider`,
+          title: "Code Generated Successfully",
+          description: `Generated with OpenAI${tokenInfo}`,
         });
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error generating code:", error);
       toast({
         title: "Generation Failed",
-        description: "An unexpected error occurred during code generation. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-      setCode(""); // Clear previous code on error
+      setCode("");
     } finally {
       setIsGenerating(false);
     }
@@ -115,17 +114,16 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
     }
 
     try {
-      // Export as a simple file
       const success = await exportCode(code, {
         format: 'file',
-        fileName: `code-${Date.now()}.txt`,
+        fileName: `generated-code-${Date.now()}.txt`,
         includeMetadata: true
       });
 
       if (success) {
         toast({
           title: "Code Exported",
-          description: "Your code has been exported as a file.",
+          description: "Your code has been downloaded as a file.",
         });
       } else {
         toast({
@@ -134,7 +132,7 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error exporting code:", error);
       toast({
         title: "Export Failed",
@@ -155,28 +153,27 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
     }
 
     try {
-      // Deploy locally (just a basic example)
       const success = await deployCode(code, {
         target: 'local',
-        projectName: `project-${Date.now()}`
+        projectName: `cyber-project-${Date.now()}`
       });
 
       if (success) {
         toast({
-          title: "Code Deployed",
-          description: "Your code has been prepared for local deployment.",
+          title: "Project Files Created",
+          description: "HTML and README files have been downloaded for your project.",
         });
       } else {
         toast({
-          title: "Deployment Failed",
-          description: "Failed to deploy the code. Please try again.",
+          title: "Deploy Failed",
+          description: "Failed to create project files. Please try again.",
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deploying code:", error);
       toast({
-        title: "Deployment Failed",
+        title: "Deploy Failed",
         description: "An error occurred during deployment.",
         variant: "destructive",
       });
@@ -197,9 +194,6 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
             </h1>
 
             <PromptInput onGenerate={handleGenerateCode} isLoading={isGenerating} />
-
-            {/* Mode Suggestions */}
-            <ModeSuggestions input={generatedFromPrompt} className="mt-2" />
 
             <div className="flex flex-col gap-3">
               <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
@@ -225,11 +219,13 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       </div>
 
       <footer className="h-10 chrome-gradient border-t border-cyber-bright-blue border-opacity-30 flex items-center justify-between px-4">
-        <div className="text-xs text-cyber-black font-mono">Systems: operational</div>
+        <div className="text-xs text-cyber-black font-mono">
+          Systems: {isGenerating ? "processing" : "operational"}
+        </div>
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-cyber-bright-blue animate-pulse"></div>
+          <div className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-green-500' : 'bg-red-500'} ${isGenerating ? 'animate-pulse' : ''}`}></div>
           <div className="text-xs text-cyber-black font-mono">
-            AI Engine: {isGenerating ? "processing" : "ready"} | Provider: {activeProvider} | Mode: {activeMode}
+            AI Engine: {isGenerating ? "generating" : hasApiKey ? "ready" : "needs config"} | Provider: {activeProvider}
           </div>
         </div>
       </footer>

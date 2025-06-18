@@ -1,396 +1,156 @@
+
 /**
- * Model Router Service
- * Intelligently routes requests to appropriate AI providers
+ * Model Router
+ * Routes AI requests to appropriate providers with fallback and load balancing
  */
 
-import { 
-  AIProvider,
-  AIPrompt,
-  AIProviderOptions,
-  AIResponse
-} from '../interfaces/ai-provider';
-import { ProviderFactory } from './provider-factory';
-import { getService } from './service-locator';
-import { SettingsManager } from '../interfaces/settings-manager';
+import { AIProvider } from '@shared/interfaces/ai-provider';
+import { ServiceLocator } from './service-locator';
+import { SettingsManager } from '@shared/interfaces/settings-manager';
 
-// Types of routing strategies
-export type RoutingStrategy = 
-  'user-selected' | 
-  'cost-optimized' | 
-  'performance-optimized' | 
-  'balanced' | 
-  'auto';
-
-export interface RoutingOptions {
-  strategy: RoutingStrategy;
-  promptComplexity?: 'low' | 'medium' | 'high' | 'auto';
-  prioritizeCost?: boolean;
-  prioritizeAccuracy?: boolean;
-  languageSpecific?: string; // Programming language if specific
-  contextLength?: number;    // Estimated context length
-  fallbackProviders?: string[]; // Ordered list of fallback providers
+export interface ModelRouterOptions {
+  activeProvider?: string;
+  fallbackProvider?: string;
+  memoryEnabled?: boolean;
+  conversationLoggingEnabled?: boolean;
+  fallbackEnabled?: boolean;
 }
 
-// Default routing options
-const defaultRoutingOptions: RoutingOptions = {
-  strategy: 'user-selected',
-  promptComplexity: 'medium',
-  prioritizeCost: false,
-  prioritizeAccuracy: false,
-  languageSpecific: undefined,
-  contextLength: 0,
-  fallbackProviders: []
-};
-
 /**
- * Model Router handles selection of the appropriate AI provider based on various criteria
+ * Model Router for managing AI provider selection and routing
  */
 export class ModelRouter {
-  private routingOptions: RoutingOptions;
-  private settingsManager: SettingsManager;
-  private DEFAULT_PROVIDER = 'claude';
+  private activeProvider: string = 'claude';
+  private fallbackProvider?: string;
+  private memoryEnabled: boolean = false;
+  private conversationLoggingEnabled: boolean = false;
+  private fallbackEnabled: boolean = false;
+  private serviceLocator?: ServiceLocator;
 
-  constructor(options: Partial<RoutingOptions> = {}) {
-    this.routingOptions = {
-      ...defaultRoutingOptions,
-      ...options
-    };
-    
-    this.settingsManager = getService<SettingsManager>('settingsManager');
+  constructor(serviceLocator?: ServiceLocator) {
+    this.serviceLocator = serviceLocator;
   }
 
   /**
-   * Route a prompt to the appropriate provider and get a response
-   * @param prompt The prompt to route
-   * @param options Provider options
-   * @returns The AI response
+   * Send a message to the active provider
    */
-  public async getResponse(
-    prompt: AIPrompt, 
-    options?: Partial<AIProviderOptions>
-  ): Promise<AIResponse> {
-    const providerName = this.routePrompt(prompt, options);
-    return this.executeWithFallback(providerName, prompt, options);
-  }
-
-  /**
-   * Route a prompt to the appropriate provider based on strategy
-   * @param prompt The prompt to route
-   * @param options Provider options
-   * @returns The provider name selected
-   */
-  public routePrompt(
-    prompt: AIPrompt, 
-    options?: Partial<AIProviderOptions>
-  ): string {
-    // Get available providers with configured API keys
-    const availableProviders = ProviderFactory.getConfiguredProviders();
-    
-    if (availableProviders.length === 0) {
-      throw new Error("No providers are configured with API keys");
-    }
-    
-    // Auto-detect complexity if needed
-    if (this.routingOptions.promptComplexity === 'auto') {
-      this.routingOptions.promptComplexity = this.detectPromptComplexity(prompt);
-    }
-    
-    // Apply routing strategy
-    switch (this.routingOptions.strategy) {
-      case 'user-selected':
-        return this.routeUserSelected();
-      
-      case 'cost-optimized':
-        return this.routeCostOptimized(prompt, availableProviders);
-      
-      case 'performance-optimized':
-        return this.routePerformanceOptimized(prompt, availableProviders);
-      
-      case 'balanced':
-        return this.routeBalanced(prompt, availableProviders);
-        
-      case 'auto':
-        return this.routeAuto(prompt, availableProviders);
-      
-      default:
-        return this.routeUserSelected();
-    }
-  }
-  
-  /**
-   * Execute a prompt with the selected provider, falling back to others if needed
-   * @param providerName Initial provider to try
-   * @param prompt The prompt to process
-   * @param options Provider options
-   * @returns AI response
-   */
-  private async executeWithFallback(
-    providerName: string,
-    prompt: AIPrompt,
-    options?: Partial<AIProviderOptions>
-  ): Promise<AIResponse> {
-    // Start with the selected provider
-    let providersToTry = [providerName];
-    
-    // Add fallback providers in order
-    if (this.routingOptions.fallbackProviders && this.routingOptions.fallbackProviders.length > 0) {
-      // Filter out the primary provider if it's in the fallback list
-      providersToTry = providersToTry.concat(
-        this.routingOptions.fallbackProviders.filter(p => p !== providerName)
+  async sendMessage(message: string, options?: any): Promise<any> {
+    try {
+      const provider = this.getActiveProviderInstance();
+      const result = await provider.generateResponse(
+        { content: message },
+        { apiKey: this.getApiKey(this.activeProvider), ...options }
       );
-    } else {
-      // Use all configured providers as fallbacks if none specified
-      providersToTry = providersToTry.concat(
-        ProviderFactory.getConfiguredProviders().filter(p => p !== providerName)
-      );
-    }
 
-    // Try each provider in sequence
-    let lastError: string | undefined;
-    
-    for (const provider of providersToTry) {
-      try {
-        // Get provider instance
-        const providerInstance = ProviderFactory.getProvider(provider);
-        
-        // Get API key from settings
-        const apiKey = this.settingsManager.getApiKey(provider);
-        if (!apiKey) {
-          console.warn(`No API key configured for ${provider}, skipping.`);
-          continue;
+      // Store in memory if enabled
+      if (this.memoryEnabled && this.serviceLocator) {
+        try {
+          const memoryService = this.serviceLocator.get('memoryEngine');
+          // Store user message and response
+        } catch (error) {
+          console.warn('Memory service not available', error);
         }
-        
-        // Get model from settings or options
-        const model = options?.model || this.settingsManager.getPreferredModel(provider);
-        
-        // Optimize prompt for this provider
-        const optimizedPrompt = await providerInstance.optimizePrompt(prompt);
-        
-        // Generate response
-        const response = await providerInstance.generateResponse(
-          optimizedPrompt.optimizedPrompt,
-          {
-            apiKey,
-            model,
-            ...options
-          }
+      }
+
+      // Log conversation if enabled
+      if (this.conversationLoggingEnabled && this.serviceLocator) {
+        try {
+          const conversationService = this.serviceLocator.get('conversationManager');
+          // Log conversation
+        } catch (error) {
+          console.warn('Conversation service not available', error);
+        }
+      }
+
+      return result;
+    } catch (error) {
+      if (this.fallbackEnabled && this.fallbackProvider) {
+        console.warn(`Primary provider failed, using fallback: ${this.fallbackProvider}`);
+        const fallbackProviderInstance = this.getProviderInstance(this.fallbackProvider);
+        return await fallbackProviderInstance.generateResponse(
+          { content: message },
+          { apiKey: this.getApiKey(this.fallbackProvider), ...options }
         );
-        
-        // If successful, return the response
-        if (!response.error) {
-          return response;
-        }
-        
-        // Store error and try next provider
-        lastError = response.error;
-        console.warn(`Provider ${provider} failed: ${response.error}. Trying fallback.`);
-      } catch (error) {
-        lastError = error instanceof Error ? error.message : String(error);
-        console.error(`Error with provider ${provider}:`, error);
       }
-    }
-    
-    // If we reach here, all providers failed
-    return {
-      content: "",
-      error: `All providers failed. Last error: ${lastError || "Unknown error"}`
-    };
-  }
-  
-  /**
-   * Auto-detect prompt complexity
-   */
-  private detectPromptComplexity(prompt: AIPrompt): 'low' | 'medium' | 'high' {
-    const fullPrompt = prompt.context 
-      ? `${prompt.context}\n\n${prompt.content}`
-      : prompt.content;
-    
-    // Simple heuristics for complexity
-    const length = fullPrompt.length;
-    const lineCount = fullPrompt.split('\n').length;
-    const complexTerms = [
-      'algorithm', 'optimization', 'complex', 'advanced', 'architecture',
-      'database', 'performance', 'security', 'scale', 'distributed',
-      'machine learning', 'AI', 'neural', 'parallel', 'concurrent'
-    ];
-    
-    // Count occurrences of complex terms
-    const complexTermCount = complexTerms.reduce((count, term) => {
-      const regex = new RegExp(term, 'gi');
-      const matches = fullPrompt.match(regex);
-      return count + (matches ? matches.length : 0);
-    }, 0);
-    
-    // Determine complexity
-    if (length > 1000 || lineCount > 30 || complexTermCount > 5) {
-      return 'high';
-    } else if (length > 500 || lineCount > 15 || complexTermCount > 2) {
-      return 'medium';
-    } else {
-      return 'low';
+      throw error;
     }
   }
-  
+
   /**
-   * Route based on user's selected provider
+   * Set the active provider
    */
-  private routeUserSelected(): string {
-    const userSelectedProvider = this.settingsManager.getActiveProvider();
-    return userSelectedProvider || this.DEFAULT_PROVIDER;
+  setActiveProvider(provider: string): void {
+    this.activeProvider = provider;
   }
-  
+
   /**
-   * Route based on cost optimization
+   * Set the fallback provider
    */
-  private routeCostOptimized(prompt: AIPrompt, availableProviders: string[]): string {
-    // Simple cost-based routing based on known provider pricing
-    // Gemini tends to be cheapest, followed by OpenAI, then Claude
-    const preferredOrder = ['gemini', 'openai', 'claude'];
-    
-    // Find the first available provider in preferred order
-    for (const provider of preferredOrder) {
-      if (availableProviders.includes(provider)) {
-        return provider;
+  setFallbackProvider(provider: string): void {
+    this.fallbackProvider = provider;
+  }
+
+  /**
+   * Enable or disable memory integration
+   */
+  setMemoryEnabled(enabled: boolean): void {
+    this.memoryEnabled = enabled;
+  }
+
+  /**
+   * Enable or disable conversation logging
+   */
+  setConversationLoggingEnabled(enabled: boolean): void {
+    this.conversationLoggingEnabled = enabled;
+  }
+
+  /**
+   * Enable or disable fallback functionality
+   */
+  setFallbackEnabled(enabled: boolean): void {
+    this.fallbackEnabled = enabled;
+  }
+
+  /**
+   * Get the active provider instance
+   */
+  private getActiveProviderInstance(): AIProvider {
+    return this.getProviderInstance(this.activeProvider);
+  }
+
+  /**
+   * Get a provider instance by name
+   */
+  private getProviderInstance(name: string): AIProvider {
+    if (!this.serviceLocator) {
+      throw new Error('Service locator not configured');
+    }
+
+    const providerServiceName = `${name.toLowerCase()}Provider`;
+    try {
+      return this.serviceLocator.get<AIProvider>(providerServiceName);
+    } catch (error) {
+      throw new Error(`Provider '${name}' not found or not registered`);
+    }
+  }
+
+  /**
+   * Get API key for a provider
+   */
+  private getApiKey(provider: string): string {
+    if (!this.serviceLocator) {
+      throw new Error('Service locator not configured');
+    }
+
+    try {
+      const settingsManager = this.serviceLocator.get<SettingsManager>('settingsManager');
+      const apiKey = settingsManager.getApiKey(provider);
+      if (!apiKey) {
+        throw new Error(`API key not configured for provider: ${provider}`);
       }
+      return apiKey;
+    } catch (error) {
+      throw new Error(`Failed to get API key for provider '${provider}': ${error}`);
     }
-    
-    // Fall back to first available
-    return availableProviders[0];
-  }
-  
-  /**
-   * Route based on performance optimization
-   */
-  private routePerformanceOptimized(prompt: AIPrompt, availableProviders: string[]): string {
-    // Performance rating based on language and task
-    const language = this.routingOptions.languageSpecific;
-    
-    // Preferred orders based on language
-    const languagePreferences: Record<string, string[]> = {
-      // Languages where OpenAI tends to perform better
-      'javascript': ['openai', 'claude', 'gemini'],
-      'typescript': ['openai', 'claude', 'gemini'],
-      'python': ['openai', 'claude', 'gemini'],
-      
-      // Languages where Claude tends to perform better
-      'rust': ['claude', 'openai', 'gemini'],
-      'go': ['claude', 'openai', 'gemini'],
-      
-      // Default preference
-      'default': ['claude', 'openai', 'gemini']
-    };
-    
-    const preferredOrder = language && languagePreferences[language.toLowerCase()]
-      ? languagePreferences[language.toLowerCase()]
-      : languagePreferences.default;
-    
-    // Find the first available provider in preferred order
-    for (const provider of preferredOrder) {
-      if (availableProviders.includes(provider)) {
-        return provider;
-      }
-    }
-    
-    // Fall back to first available
-    return availableProviders[0];
-  }
-  
-  /**
-   * Route based on balanced approach
-   */
-  private routeBalanced(prompt: AIPrompt, availableProviders: string[]): string {
-    // For simple prompts, use cost-optimized
-    if (this.routingOptions.promptComplexity === 'low') {
-      return this.routeCostOptimized(prompt, availableProviders);
-    }
-    
-    // For complex prompts, use performance-optimized
-    if (this.routingOptions.promptComplexity === 'high') {
-      return this.routePerformanceOptimized(prompt, availableProviders);
-    }
-    
-    // For medium complexity, make a balanced choice
-    if (this.routingOptions.prioritizeCost) {
-      return this.routeCostOptimized(prompt, availableProviders);
-    }
-    
-    if (this.routingOptions.prioritizeAccuracy) {
-      return this.routePerformanceOptimized(prompt, availableProviders);
-    }
-    
-    // Default balanced approach for medium complexity
-    return this.routeUserSelected();
-  }
-  
-  /**
-   * Auto-routing that intelligently selects the best strategy based on prompt analysis
-   */
-  private routeAuto(prompt: AIPrompt, availableProviders: string[]): string {
-    // Check if language-specific
-    const hasCode = /```[\s\S]*?```/.test(prompt.content);
-    const codeLanguageMatch = prompt.content.match(/```(\w+)/);
-    const language = codeLanguageMatch ? codeLanguageMatch[1] : undefined;
-    
-    if (language) {
-      // Set language-specific routing
-      this.routingOptions.languageSpecific = language;
-    }
-    
-    // For very complex tasks with long contexts, prioritize models with larger context windows
-    if (this.routingOptions.promptComplexity === 'high' && 
-        (prompt.context || this.routingOptions.contextLength > 8000)) {
-      // Get providers by context window size
-      const contextRanking = availableProviders
-        .map(provider => {
-          const providerInstance = ProviderFactory.getProvider(provider);
-          const model = this.settingsManager.getPreferredModel(provider);
-          return {
-            provider,
-            contextSize: providerInstance.getMaxContextLength(model)
-          };
-        })
-        .sort((a, b) => b.contextSize - a.contextSize);
-      
-      if (contextRanking.length > 0) {
-        return contextRanking[0].provider;
-      }
-    }
-    
-    // For code generation tasks, prioritize performance
-    if (hasCode || language) {
-      return this.routePerformanceOptimized(prompt, availableProviders);
-    }
-    
-    // For short, simple queries, prioritize cost
-    if (this.routingOptions.promptComplexity === 'low') {
-      return this.routeCostOptimized(prompt, availableProviders);
-    }
-    
-    // Default to balanced for everything else
-    return this.routeBalanced(prompt, availableProviders);
-  }
-  
-  /**
-   * Set the routing strategy
-   */
-  public setRoutingStrategy(strategy: RoutingStrategy): void {
-    this.routingOptions.strategy = strategy;
-  }
-  
-  /**
-   * Set routing options
-   */
-  public setRoutingOptions(options: Partial<RoutingOptions>): void {
-    this.routingOptions = {
-      ...this.routingOptions,
-      ...options
-    };
-  }
-  
-  /**
-   * Get current routing options
-   */
-  public getRoutingOptions(): RoutingOptions {
-    return { ...this.routingOptions };
   }
 }

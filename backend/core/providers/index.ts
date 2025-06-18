@@ -1,10 +1,8 @@
+
 /**
  * AI Provider Implementations Index
  * Exports all AI provider implementations
  */
-
-// Export the provider interfaces
-export * from '../interfaces/ai-provider';
 
 // Export provider implementations
 export * from './claude-provider';
@@ -15,7 +13,7 @@ export * from './gemini-provider';
 import { ClaudeProvider } from './claude-provider';
 import { OpenAIProvider } from './openai-provider';
 import { GeminiProvider } from './gemini-provider';
-import { AIProvider } from '../interfaces/ai-provider';
+import { AIProvider } from '@shared/interfaces/ai-provider';
 
 // Create provider instances
 const createClaudeProvider = () => new ClaudeProvider();

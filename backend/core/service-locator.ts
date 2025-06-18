@@ -1,17 +1,18 @@
+
 /**
  * Service Locator
  * Simple service locator pattern implementation for managing dependencies
  */
 
 // Store for registered services
-const services: Record<string, any> = {};
+const services: Record<string, unknown> = {};
 
 /**
  * Register a service instance with the service locator
  * @param name Unique identifier for the service
  * @param service Service instance
  */
-export function registerService(name: string, service: any): void {
+export function registerService(name: string, service: unknown): void {
   if (services[name]) {
     console.warn(`Service '${name}' is being overwritten.`);
   }
@@ -72,4 +73,31 @@ export function clearServices(): void {
   Object.keys(services).forEach(key => {
     delete services[key];
   });
+}
+
+/**
+ * Service Locator Class for dependency injection
+ */
+export class ServiceLocator {
+  private services: Map<string, unknown> = new Map();
+
+  register<T>(name: string, service: T): void {
+    this.services.set(name, service);
+  }
+
+  get<T>(name: string): T {
+    const service = this.services.get(name);
+    if (!service) {
+      throw new Error(`Service '${name}' not found`);
+    }
+    return service as T;
+  }
+
+  has(name: string): boolean {
+    return this.services.has(name);
+  }
+
+  clear(): void {
+    this.services.clear();
+  }
 }

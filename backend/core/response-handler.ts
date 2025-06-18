@@ -6,7 +6,7 @@
 import {
   AIResponse,
   StreamingResponseChunk
-} from '../interfaces/ai-provider';
+} from '@shared/interfaces/ai-provider';
 
 // Supported language types for syntax highlighting
 export type SupportedLanguage = 
