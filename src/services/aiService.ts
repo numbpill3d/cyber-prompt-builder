@@ -13,9 +13,49 @@ import { sessionManager, Session, EditAction, EditTarget } from './session-manag
 import { Logger } from './logging/logger';
 import { errorHandler, ProviderError, ValidationError, AuthenticationError } from './error/error-handler';
 import { configService } from './config/config-service';
+import { getMemoryService } from './memory/memory-service';
+import { MemoryPoweredSuggestions, CodeSuggestion } from './memory/memory-powered-suggestions';
+import { MemoryType } from './memory/memory-types';
+import { LearningContext } from './memory/contextual-memory-service';
+import { getMemoryService } from './memory/memory-service';
+import { MemoryPoweredSuggestions, CodeSuggestion } from './memory/memory-powered-suggestions';
+import { MemoryType } from './memory/memory-types';
+import { LearningContext } from './memory/contextual-memory-service';
 
 // Initialize logger
 const logger = new Logger('AIService');
+
+// Initialize memory-powered suggestions service
+let memoryPoweredSuggestions: MemoryPoweredSuggestions | null = null;
+
+// Initialize memory-powered suggestions
+const initializeMemoryServices = async () => {
+  if (!memoryPoweredSuggestions) {
+    try {
+      const memoryService = await getMemoryService();
+      memoryPoweredSuggestions = new MemoryPoweredSuggestions(memoryService);
+      logger.info('Memory-powered suggestions initialized');
+    } catch (error) {
+      logger.error('Failed to initialize memory services:', error);
+    }
+  }
+};
+
+// Initialize memory-powered suggestions service
+let memoryPoweredSuggestions: MemoryPoweredSuggestions | null = null;
+
+// Initialize memory-powered suggestions
+const initializeMemoryServices = async () => {
+  if (!memoryPoweredSuggestions) {
+    try {
+      const memoryService = await getMemoryService();
+      memoryPoweredSuggestions = new MemoryPoweredSuggestions(memoryService);
+      logger.info('Memory-powered suggestions initialized');
+    } catch (error) {
+      logger.error('Failed to initialize memory services:', error);
+    }
+  }
+};
 
 // Re-export types for use by consumers
 export type { AIPrompt } from './providers/providers';

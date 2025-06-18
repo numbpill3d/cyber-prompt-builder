@@ -15,6 +15,10 @@ import {
 } from './memory-types';
 import { BaseMemoryService, MemoryService, MemoryProviderConfig } from './memory-service';
 import { sessionManager } from '../session-manager';
+import { AdvancedEmbeddingFunction } from './advanced-embedding-provider';
+import { ContextualMemoryService, UserPattern, ContextualInsight, LearningContext } from './contextual-memory-service';
+import { AdvancedEmbeddingFunction } from './advanced-embedding-provider';
+import { ContextualMemoryService, UserPattern, ContextualInsight, LearningContext } from './contextual-memory-service';
 
 // Mock implementation of the ChromaDB client for development
 // In production, this would be replaced with real ChromaDB imports
@@ -83,51 +87,32 @@ interface ChromaClient {
   deleteCollection: (name: string) => Promise<void>;
 }
 
-// Placeholder for text embedding function
-// In production, this would use a proper embedding model
-class BasicEmbeddingFunction {
-  private dimensions: number;
-  
-  constructor(dimensions: number = 1536) {
-    this.dimensions = dimensions;
-  }
-  
-  async generate(texts: string[]): Promise<number[][]> {
-    // Simple deterministic hash-based embedding for testing
-    // Not suitable for production use - would use a real embedding model
-    return texts.map(text => {
-      const bytes = new TextEncoder().encode(text);
-      const embedding = new Array(this.dimensions).fill(0);
-      
-      for (let i = 0; i < bytes.length; i++) {
-        const idx = i % this.dimensions;
-        embedding[idx] = (embedding[idx] + bytes[i] / 255) / 2;
-      }
-      
-      // Normalize the vector
-      const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-      return embedding.map(val => val / (magnitude || 1));
-    });
-  }
-}
+// Enhanced embedding function is now imported from advanced-embedding-provider
 
 /**
- * ChromaDB implementation of the Memory Service
+ * Enhanced ChromaDB implementation with contextual learning and advanced embeddings
  */
 export class ChromaMemoryProvider extends BaseMemoryService {
   private client: ChromaClient | null = null;
   private collections: Map<string, ChromaCollection> = new Map();
-  private embedder: BasicEmbeddingFunction;
+  private embedder: AdvancedEmbeddingFunction;
+  private contextualService: ContextualMemoryService;
+  private contextualService: ContextualMemoryService;
   private isInitialized: boolean = false;
   
   constructor(config: MemoryProviderConfig = {}) {
     super(config);
     
-    // Use basic embedder for development
-    // In production, would use a more sophisticated embedding model
-    this.embedder = new BasicEmbeddingFunction(this.config.dimensions);
+    // Use advanced embedding function with multiple providers
+    this.embedder = new AdvancedEmbeddingFunction(this.config);
+    
+    // Initialize contextual learning service
+    this.contextualService = new ContextualMemoryService(config);
   }
-  
+  Enhanced embedding function is now imported from advanced-embedding-provider
+
+/**
+ * Enhanced ChromaDB implementation with contextual learning and advanced embeddings
   /**
    * Initialize the ChromaDB client and ensure persistence directory exists
    */
@@ -135,6 +120,12 @@ export class ChromaMemoryProvider extends BaseMemoryService {
     if (this.isInitialized) return;
     
     try {
+      // Initialize advanced embedding function
+      await this.embedder.initialize();
+      console.log(`Initialized embedding with model: ${this.embedder.getActiveModel().name}`);
+      // Initialize advanced embedding function
+      await this.embedder.initialize();
+      console.log(`Initialized embedding with model: ${this.embedder.getActiveModel().name}`);
       // In production, this would use the actual ChromaDB client
       // this.client = new ChromaClient({ path: this.config.persistencePath });
       
@@ -693,13 +684,287 @@ export class ChromaMemoryProvider extends BaseMemoryService {
       return { entries: [], totalCount: 0 };
     }
   }
+
+  /**
+   * Enhanced memory addition with contextual learning
+   */
+  async addMemoryWithLearning(
+    collection: string, 
+    content: string, 
+    metadata: MemoryMetadata,
+    context?: LearningContext
+  ): Promise<MemoryEntry> {
+    // Add memory using standard method
+    const memory = await this.addMemory(collection, content, metadata);
+    
+    // Learn from this interaction if context provided
+    if (context) {
+      await this.contextualService.learnFromInteraction({
+        ...context,
+        context: {
+          ...context.context,
+          memoryId: memory.id,
+          collection,
+          content: content.substring(0, 200) // Truncate for privacy
+        }
+      });
+    }
+    
+    return memory;
+  }
+
+  /**
+   * Get contextual suggestions for user input
+   */
+  async getContextualSuggestions(input: string, sessionId: string): Promise<ContextualInsight[]> {
+    return this.contextualService.getContextualSuggestions(input, sessionId);
+  }
+
+  /**
+   * Get personalized code templates
+   */
+  async getPersonalizedTemplates(language: string, context: string): Promise<MemoryEntry[]> {
+    return this.contextualService.getPersonalizedTemplates(language, context);
+  }
+
+  /**
+   * Predict user intent from partial input
+   */
+  async predictUserIntent(partialInput: string, sessionId: string): Promise<{
+    intent: string;
+    confidence: number;
+    suggestions: string[];
+  }> {
+    return this.contextualService.predictUserIntent(partialInput, sessionId);
+  }
+
+  /**
+   * Enhanced search with semantic similarity and contextual ranking
+   */
+  async searchMemoriesEnhanced(
+    collection: string, 
+    params: MemorySearchParams,
+    sessionId?: string
+  ): Promise<MemorySearchResult & { insights: ContextualInsight[] }> {
+    // Get standard search results
+    const standardResults = await this.searchMemories(collection, params);
+    
+    // Get contextual insights if session provided
+    let insights: ContextualInsight[] = [];
+    if (sessionId && params.query) {
+      insights = await this.getContextualSuggestions(params.query, sessionId);
+    }
+    
+    // Re-rank results based on user patterns if available
+    const rerankedEntries = await this.reRankByUserPatterns(standardResults.entries, sessionId);
+    
+    return {
+      ...standardResults,
+      entries: rerankedEntries,
+      insights
+    };
+  }
+
+  /**
+   * Re-rank search results based on user patterns
+   */
+  private async reRankByUserPatterns(entries: MemoryEntry[], sessionId?: string): Promise<MemoryEntry[]> {
+    if (!sessionId) return entries;
+    
+    // Get user patterns from contextual service
+    const insights = this.contextualService.getAdaptiveLearningInsights();
+    const patternKeywords = insights
+      .filter(i => i.type === 'pattern')
+      .map(i => i.message.toLowerCase());
+    
+    // Score entries based on pattern matches
+    const scoredEntries = entries.map(entry => {
+      let score = 0;
+      const content = entry.content.toLowerCase();
+      
+      for (const keyword of patternKeywords) {
+        if (content.includes(keyword)) {
+          score += 1;
+        }
+      }
+      
+      // Boost recent entries
+      const ageInDays = (Date.now() - entry.createdAt) / (1000 * 60 * 60 * 24);
+      score += Math.max(0, 1 - ageInDays / 30); // Boost entries from last 30 days
+      
+      return { entry, score };
+    });
+    
+    // Sort by score and return entries
+    return scoredEntries
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.entry);
+  }
+
+  /**
+   * Get memory statistics with learning insights
+   */
+  async getEnhancedMemoryStats(collection: string): Promise<{
+    count: number;
+    lastUpdated: number;
+    avgEmbeddingSize: number;
+    types: Record<string, number>;
+    insights: ContextualInsight[];
+    embeddingModel: string;
+  }> {
+    const basicStats = await this.getMemoryStats(collection);
+    const insights = this.contextualService.getAdaptiveLearningInsights();
+    
+    return {
+      ...basicStats,
+      insights,
+      embeddingModel: this.embedder.getActiveModel().name
+    };
+  }
   
   /**
-   * Generate an embedding for text
+   * Generate an embedding for text using advanced embedding function
    */
   async embedText(text: string): Promise<number[]> {
     const embeddings = await this.embedder.generate([text]);
     return embeddings[0];
+  }
+
+  /**
+   * Enhanced memory addition with contextual learning
+   */
+  async addMemoryWithLearning(
+    collection: string, 
+    content: string, 
+    metadata: MemoryMetadata,
+    context?: LearningContext
+  ): Promise<MemoryEntry> {
+    // Add memory using standard method
+    const memory = await this.addMemory(collection, content, metadata);
+    
+    // Learn from this interaction if context provided
+    if (context) {
+      await this.contextualService.learnFromInteraction({
+        ...context,
+        context: {
+          ...context.context,
+          memoryId: memory.id,
+          collection,
+          content: content.substring(0, 200) // Truncate for privacy
+        }
+      });
+    }
+    
+    return memory;
+  }
+
+  /**
+   * Get contextual suggestions for user input
+   */
+  async getContextualSuggestions(input: string, sessionId: string): Promise<ContextualInsight[]> {
+    return this.contextualService.getContextualSuggestions(input, sessionId);
+  }
+
+  /**
+   * Get personalized code templates
+   */
+  async getPersonalizedTemplates(language: string, context: string): Promise<MemoryEntry[]> {
+    return this.contextualService.getPersonalizedTemplates(language, context);
+  }
+
+  /**
+   * Predict user intent from partial input
+   */
+  async predictUserIntent(partialInput: string, sessionId: string): Promise<{
+    intent: string;
+    confidence: number;
+    suggestions: string[];
+  }> {
+    return this.contextualService.predictUserIntent(partialInput, sessionId);
+  }
+
+  /**
+   * Enhanced search with semantic similarity and contextual ranking
+   */
+  async searchMemoriesEnhanced(
+    collection: string, 
+    params: MemorySearchParams,
+    sessionId?: string
+  ): Promise<MemorySearchResult & { insights: ContextualInsight[] }> {
+    // Get standard search results
+    const standardResults = await this.searchMemories(collection, params);
+    
+    // Get contextual insights if session provided
+    let insights: ContextualInsight[] = [];
+    if (sessionId && params.query) {
+      insights = await this.getContextualSuggestions(params.query, sessionId);
+    }
+    
+    // Re-rank results based on user patterns if available
+    const rerankedEntries = await this.reRankByUserPatterns(standardResults.entries, sessionId);
+    
+    return {
+      ...standardResults,
+      entries: rerankedEntries,
+      insights
+    };
+  }
+
+  /**
+   * Re-rank search results based on user patterns
+   */
+  private async reRankByUserPatterns(entries: MemoryEntry[], sessionId?: string): Promise<MemoryEntry[]> {
+    if (!sessionId) return entries;
+    
+    // Get user patterns from contextual service
+    const insights = this.contextualService.getAdaptiveLearningInsights();
+    const patternKeywords = insights
+      .filter(i => i.type === 'pattern')
+      .map(i => i.message.toLowerCase());
+    
+    // Score entries based on pattern matches
+    const scoredEntries = entries.map(entry => {
+      let score = 0;
+      const content = entry.content.toLowerCase();
+      
+      for (const keyword of patternKeywords) {
+        if (content.includes(keyword)) {
+          score += 1;
+        }
+      }
+      
+      // Boost recent entries
+      const ageInDays = (Date.now() - entry.createdAt) / (1000 * 60 * 60 * 24);
+      score += Math.max(0, 1 - ageInDays / 30); // Boost entries from last 30 days
+      
+      return { entry, score };
+    });
+    
+    // Sort by score and return entries
+    return scoredEntries
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.entry);
+  }
+
+  /**
+   * Get memory statistics with learning insights
+   */
+  async getEnhancedMemoryStats(collection: string): Promise<{
+    count: number;
+    lastUpdated: number;
+    avgEmbeddingSize: number;
+    types: Record<string, number>;
+    insights: ContextualInsight[];
+    embeddingModel: string;
+  }> {
+    const basicStats = await this.getMemoryStats(collection);
+    const insights = this.contextualService.getAdaptiveLearningInsights();
+    
+    return {
+      ...basicStats,
+      insights,
+      embeddingModel: this.embedder.getActiveModel().name
+    };
   }
   
   /**
