@@ -1,171 +1,71 @@
-import React, { useMemo } from 'react';
-import { Card } from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { diffLines, Change } from 'diff';
 
-interface DiffViewProps {
-  original: string;
-  updated: string;
-  language: string;
-  fileName?: string;
+import React from 'react';
+import { Card } from './ui/card';
+
+interface DiffLine {
+  type: 'added' | 'removed' | 'unchanged';
+  content: string;
+  lineNumber?: number;
 }
 
-/**
- * DiffView component to display differences between two code versions
- */
+interface DiffViewProps {
+  beforeCode?: string;
+  afterCode?: string;
+  title?: string;
+}
+
 export const DiffView: React.FC<DiffViewProps> = ({
-  original,
-  updated,
-  language,
-  fileName
+  beforeCode = '',
+  afterCode = '',
+  title = 'Code Changes'
 }) => {
-  // Compute the diff between original and updated code
-  const changes: Change[] = useMemo(() => {
-    return diffLines(original, updated);
-  }, [original, updated]);
-
-  // Get a display name for the language
-  const getLanguageDisplayName = (lang: string): string => {
-    const displayMap: Record<string, string> = {
-      'js': 'JavaScript',
-      'ts': 'TypeScript',
-      'html': 'HTML',
-      'css': 'CSS',
-      'python': 'Python',
-      'py': 'Python',
-      'java': 'Java',
-      'c': 'C',
-      'cpp': 'C++',
-      'csharp': 'C#',
-      'c#': 'C#',
-      'go': 'Go',
-      'rust': 'Rust',
-      'ruby': 'Ruby',
-      'php': 'PHP',
-      'swift': 'Swift',
-      'kotlin': 'Kotlin',
-      'markdown': 'Markdown',
-      'md': 'Markdown',
-      'json': 'JSON',
-      'yaml': 'YAML',
-      'bash': 'Bash',
-      'sql': 'SQL'
-    };
-    return displayMap[lang] || lang.charAt(0).toUpperCase() + lang.slice(1);
-  };
-
-  const displayName = getLanguageDisplayName(language);
-  const displayFileName = fileName || `${language === 'md' ? 'README.md' : `code.${language}`}`;
-
-  // Render the diff view with added/removed highlighting
-  const renderDiff = () => {
-    return (
-      <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-gray-900 rounded-md">
-        {changes.map((change, index) => {
-          // Determine the styling based on whether text was added, removed, or unchanged
-          let className = "text-gray-300";
-          let prefix = "  ";
-          
-          if (change.added) {
-            className = "text-green-400 bg-green-900/30";
-            prefix = "+ ";
-          } else if (change.removed) {
-            className = "text-red-400 bg-red-900/30";
-            prefix = "- ";
-          }
-          
-          // Split the change into lines and add the appropriate prefix and styling
-          return change.value.split('\n').map((line, lineIndex, array) => {
-            // Skip the last empty line that often comes from string splitting
-            if (lineIndex === array.length - 1 && line === '') return null;
-            
-            return (
-              <div key={`${index}-${lineIndex}`} className={className}>
-                <span className="select-none text-gray-500 w-8 inline-block">{prefix}</span>
-                {line}
-              </div>
-            );
-          });
-        })}
-      </pre>
-    );
-  };
-
-  // Render unified view (showing changes inline)
-  const renderUnified = () => renderDiff();
-
-  // Render side-by-side view (original and updated code side by side)
-  const renderSideBySide = () => {
-    return (
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <div className="mb-2 font-semibold text-gray-400">Original</div>
-          <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-gray-900 rounded-md">
-            {original.split('\n').map((line, index) => (
-              <div key={`original-${index}`} className="text-gray-300">
-                {line}
-              </div>
-            ))}
-          </pre>
-        </div>
-        <div>
-          <div className="mb-2 font-semibold text-gray-400">Updated</div>
-          <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-gray-900 rounded-md">
-            {updated.split('\n').map((line, index) => (
-              <div key={`updated-${index}`} className="text-gray-300">
-                {line}
-              </div>
-            ))}
-          </pre>
-        </div>
-      </div>
-    );
-  };
-
-  // Calculate a summary of changes
-  const changeSummary = useMemo(() => {
-    let additions = 0;
-    let deletions = 0;
+  const generateDiff = (before: string, after: string): DiffLine[] => {
+    const beforeLines = before.split('\n');
+    const afterLines = after.split('\n');
+    const diff: DiffLine[] = [];
     
-    changes.forEach(change => {
-      const lines = change.value.split('\n').length - 1; // -1 for the last empty line
-      if (change.added) additions += lines;
-      if (change.removed) deletions += lines;
+    // Simple diff - mark all before lines as removed and after lines as added
+    beforeLines.forEach(line => {
+      diff.push({ type: 'removed', content: line });
     });
     
-    return { additions, deletions };
-  }, [changes]);
+    afterLines.forEach(line => {
+      diff.push({ type: 'added', content: line });
+    });
+    
+    return diff;
+  };
+
+  const diffLines = generateDiff(beforeCode, afterCode);
 
   return (
-    <Card className="overflow-hidden shadow-lg bg-gray-900">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-mono text-gray-300">{displayFileName}</span>
-          <span className="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
-            {displayName}
-          </span>
-          
-          <span className="flex items-center space-x-2 ml-4 text-xs">
-            <span className="text-green-400">+{changeSummary.additions}</span>
-            <span className="text-red-400">-{changeSummary.deletions}</span>
-          </span>
-        </div>
+    <Card className="h-full bg-gray-900 text-white border-gray-700">
+      <div className="p-4 border-b border-gray-700">
+        <h3 className="font-medium">{title}</h3>
       </div>
       
-      <Tabs defaultValue="unified" className="p-4">
-        <TabsList className="mb-4">
-          <TabsTrigger value="unified">Unified</TabsTrigger>
-          <TabsTrigger value="side-by-side">Side by Side</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="unified">
-          {renderUnified()}
-        </TabsContent>
-        
-        <TabsContent value="side-by-side">
-          {renderSideBySide()}
-        </TabsContent>
-      </Tabs>
+      <div className="h-full overflow-auto font-mono text-sm">
+        {diffLines.map((line, index) => (
+          <div
+            key={index}
+            className={`px-4 py-1 ${
+              line.type === 'added'
+                ? 'bg-green-900/30 text-green-300'
+                : line.type === 'removed'
+                ? 'bg-red-900/30 text-red-300'
+                : 'text-gray-300'
+            }`}
+          >
+            <span className="text-gray-500 mr-4 select-none">
+              {(index + 1).toString().padStart(3, ' ')}
+            </span>
+            <span className="mr-2">
+              {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
+            </span>
+            <span>{line.content}</span>
+          </div>
+        ))}
+      </div>
     </Card>
   );
 };
