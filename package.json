@@ -1,16 +1,3 @@
-class AdvancedEmbeddingFunction {
-  private dimensions: number;
-
-  constructor(dimensions: number = 1536) {
-    this.dimensions = dimensions;
-  }
-
-  async generate(texts: string[]): Promise<number[][]> {
-    // Use a sophisticated model for embeddings
-    const model = await loadModel('path/to/model');
-    return texts.map(text => model.embed(text));
-  }
-}
 {
   "name": "cyber-ai-prompt-builder",
   "private": true,
