@@ -16,7 +16,7 @@ interface CyberLayoutProps {
   children: React.ReactNode;
 }
 
-export const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
+const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
@@ -103,3 +103,5 @@ export const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
     </div>
   );
 };
+
+export default CyberLayout;
