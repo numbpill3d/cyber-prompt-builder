@@ -38,9 +38,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        "@frontend": path.resolve(__dirname, "./frontend"),
-        "@backend": path.resolve(__dirname, "./backend"),
-        "@shared": path.resolve(__dirname, "./shared"),
       },
     },
     // Define environment variables to be replaced in the client code

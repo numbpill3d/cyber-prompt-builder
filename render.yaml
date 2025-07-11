@@ -3,7 +3,7 @@ services:
     name: cyber-prompt-builder
     env: node
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npm run build && npm run build:check
     startCommand: npm start
     healthCheckPath: /health
     envVars:
@@ -21,8 +21,10 @@ services:
         - package.json
         - package-lock.json
         - vite.config.ts
-        - tsconfig.json
+        - tsconfig*.json
         - index.html
+        - server.js
+        - check-build.js
     # Headers for security
     headers:
       - path: /*

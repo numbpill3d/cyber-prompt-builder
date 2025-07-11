@@ -139,8 +139,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root route - serve the index.html file
-app.get('/', (req, res) => {
+// Catch-all handler for SPA routing - serve the index.html file for all routes
+app.get('*', (req, res) => {
+  // Skip API routes and static assets
+  if (req.path.startsWith('/api/') || req.path.startsWith('/health') || req.path.includes('.')) {
+    return next();
+  }
   const indexPath = path.join(__dirname, 'dist', 'index.html');
   const errorPath = path.join(__dirname, 'public', 'error.html');
   const fallbackPath = path.join(__dirname, 'public', 'index.html');
