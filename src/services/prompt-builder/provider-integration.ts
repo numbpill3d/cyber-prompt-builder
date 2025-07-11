@@ -234,8 +234,8 @@ export function buildTextGenerationPrompt(options: {
   // Set user preferences
   const prefsId = promptBuilderService.createUserPreferences();
   promptBuilderService.setUserPreferences(prefsId, {
-    tone: options.preferences?.tone || ResponseTone.BALANCED,
-    format: options.preferences?.format || ResponseFormat.TEXT,
+    tone: options.preferences?.tone || ResponseTone.PROFESSIONAL,
+    format: options.preferences?.format || ResponseFormat.DEFAULT,
     includeExplanations: options.preferences?.includeExplanations ?? true,
     includeExamples: options.preferences?.includeExamples ?? false
   });

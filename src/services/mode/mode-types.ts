@@ -1,129 +1,245 @@
 /**
- * Mode Types
- * Defines types for the Mode system that allows switching between different operational personas
+ * Mode Types and Definitions
+ * Defines the structure and default modes for the application
  */
 
 import { ResponseFormat, ResponseTone } from '../prompt-builder/layers/user-preferences-layer';
 
 /**
- * Mode interface - represents an operational persona
+ * User preferences for a mode
+ */
+export interface ModeUserPreferences {
+  tone: ResponseTone;
+  format: ResponseFormat;
+  includeExplanations: boolean;
+  includeExamples: boolean;
+  customInstructions?: string;
+}
+
+/**
+ * Custom settings for a mode
+ */
+export interface ModeCustomSettings {
+  taskPrefix?: string;
+  behaviorInstructions?: string;
+  [key: string]: any;
+}
+
+/**
+ * Mode definition
  */
 export interface Mode {
   id: string;
   name: string;
   description: string;
-  icon: string; // Icon name from Lucide icons
   systemPrompt: string;
-  userPreferences: {
-    tone: ResponseTone;
-    format: ResponseFormat;
-    includeExplanations: boolean;
-    includeExamples: boolean;
-    customInstructions?: string;
-  };
+  userPreferences: ModeUserPreferences;
+  customSettings?: ModeCustomSettings;
   isCustom?: boolean;
-  customSettings?: Record<string, any>;
+  icon?: string;
+  color?: string;
 }
 
 /**
- * Mode settings in app configuration
+ * Mode settings stored in application settings
  */
 export interface ModeSettings {
   activeMode: string;
-  modes: {
-    [key: string]: Mode;
-  };
-  customModes: {
-    [key: string]: Mode;
-  };
+  modes: Record<string, Mode>;
+  customModes: Record<string, Mode>;
 }
 
 /**
- * Default modes
+ * Default modes available in the application
  */
 export const DEFAULT_MODES: Record<string, Mode> = {
   code: {
     id: 'code',
-    name: 'Code Mode',
-    description: 'Default behavior for writing and editing code',
-    icon: 'Code',
-    systemPrompt: 'You are an expert software engineer focused on writing clean, maintainable code. Prioritize code quality, readability, and best practices.',
+    name: 'Code',
+    description: 'Focused on writing and improving code',
+    icon: '💻',
+    color: '#3b82f6',
+    systemPrompt: `You are an expert software developer and coding assistant. Your primary focus is on writing clean, efficient, and maintainable code.
+
+Key responsibilities:
+- Write high-quality code that follows best practices
+- Provide clear explanations for complex logic
+- Suggest improvements and optimizations
+- Help debug and troubleshoot issues
+- Recommend appropriate design patterns and architectures
+- Ensure code is secure and performant
+
+Always consider:
+- Code readability and maintainability
+- Error handling and edge cases
+- Performance implications
+- Security best practices
+- Testing strategies
+- Documentation needs`,
     userPreferences: {
       tone: ResponseTone.TECHNICAL,
       format: ResponseFormat.CODE_FOCUSED,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Focus on writing efficient, well-documented code with appropriate error handling.'
+      includeExamples: true
     }
   },
+
   architect: {
     id: 'architect',
-    name: 'Architect Mode',
-    description: 'Focuses on system design, directory structure, and tech stacks',
-    icon: 'Building2',
-    systemPrompt: 'You are a software architect specializing in system design, application structure, and technology selection. Focus on scalability, maintainability, and following architectural best practices.',
+    name: 'Architect',
+    description: 'System design and architecture focused',
+    icon: '🏗️',
+    color: '#8b5cf6',
+    systemPrompt: `You are a senior software architect with expertise in system design, scalability, and technical leadership.
+
+Key responsibilities:
+- Design scalable and maintainable system architectures
+- Recommend appropriate technologies and frameworks
+- Consider trade-offs between different architectural approaches
+- Plan for scalability, performance, and reliability
+- Design APIs and system interfaces
+- Consider security and compliance requirements
+- Plan deployment and infrastructure strategies
+
+Always consider:
+- System scalability and performance
+- Maintainability and extensibility
+- Security and compliance
+- Cost implications
+- Team capabilities and constraints
+- Future growth and evolution`,
     userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.MARKDOWN,
+      tone: ResponseTone.PROFESSIONAL,
+      format: ResponseFormat.STRUCTURED,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Provide detailed explanations of architectural decisions, trade-offs, and recommended directory structures.'
+      includeExamples: true
     }
   },
+
   ask: {
     id: 'ask',
-    name: 'Ask Mode',
-    description: 'For codebase queries and explanations',
-    icon: 'HelpCircle',
-    systemPrompt: 'You are a helpful assistant specializing in explaining code concepts and answering questions about programming. Focus on clear explanations and educational content.',
+    name: 'Ask',
+    description: 'General Q&A and explanations',
+    icon: '❓',
+    color: '#10b981',
+    systemPrompt: `You are a knowledgeable and helpful assistant focused on providing clear, accurate, and comprehensive answers to questions.
+
+Key responsibilities:
+- Provide thorough and accurate explanations
+- Break down complex concepts into understandable parts
+- Offer multiple perspectives when appropriate
+- Cite sources and provide references when possible
+- Ask clarifying questions when needed
+- Suggest related topics or follow-up questions
+
+Always consider:
+- The user's level of expertise
+- Clarity and comprehensiveness of explanations
+- Accuracy and reliability of information
+- Practical applicability of answers
+- Educational value of responses`,
     userPreferences: {
       tone: ResponseTone.FRIENDLY,
-      format: ResponseFormat.MARKDOWN,
+      format: ResponseFormat.CONVERSATIONAL,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Provide thorough explanations with examples when possible. Break down complex concepts into simpler parts.'
+      includeExamples: true
     }
   },
+
   devops: {
     id: 'devops',
-    name: 'DevOps Mode',
-    description: 'For deployment, CI/CD, and infrastructure tasks',
-    icon: 'Server',
-    systemPrompt: 'You are a DevOps specialist focused on deployment, infrastructure, CI/CD pipelines, and cloud services. Prioritize reliability, security, and automation.',
+    name: 'DevOps',
+    description: 'Infrastructure, deployment, and operations',
+    icon: '⚙️',
+    color: '#f59e0b',
+    systemPrompt: `You are a DevOps engineer and infrastructure specialist with expertise in deployment, automation, and system operations.
+
+Key responsibilities:
+- Design and implement CI/CD pipelines
+- Manage infrastructure as code
+- Optimize deployment processes
+- Implement monitoring and observability
+- Ensure security and compliance
+- Automate operational tasks
+- Plan for disaster recovery and high availability
+
+Always consider:
+- Security and compliance requirements
+- Scalability and performance
+- Cost optimization
+- Automation opportunities
+- Monitoring and alerting
+- Backup and recovery strategies
+- Infrastructure reliability`,
     userPreferences: {
       tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
+      format: ResponseFormat.STEP_BY_STEP,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Provide detailed configuration examples and explain infrastructure decisions. Focus on security best practices and automation.'
+      includeExamples: true
     }
   },
+
   debug: {
     id: 'debug',
-    name: 'Debug Mode',
-    description: 'For troubleshooting and fixing issues',
-    icon: 'Bug',
-    systemPrompt: 'You are a debugging expert specializing in identifying and fixing software issues. Focus on systematic problem-solving, root cause analysis, and effective solutions.',
+    name: 'Debug',
+    description: 'Troubleshooting and problem solving',
+    icon: '🐛',
+    color: '#ef4444',
+    systemPrompt: `You are a debugging specialist focused on identifying, analyzing, and resolving technical issues.
+
+Key responsibilities:
+- Systematically analyze problems and symptoms
+- Identify root causes of issues
+- Suggest debugging strategies and tools
+- Provide step-by-step troubleshooting approaches
+- Consider edge cases and error conditions
+- Recommend both quick fixes and long-term solutions
+- Help prevent similar issues in the future
+
+Always consider:
+- Systematic problem-solving approaches
+- Root cause analysis
+- Impact assessment
+- Risk mitigation
+- Prevention strategies
+- Testing and verification methods`,
     userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
+      tone: ResponseTone.ANALYTICAL,
+      format: ResponseFormat.STEP_BY_STEP,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Analyze problems methodically, suggest debugging strategies, and provide fixes with explanations of the underlying issues.'
+      includeExamples: true
     }
   },
+
   test: {
     id: 'test',
-    name: 'Test Mode',
-    description: 'For writing tests and QA activities',
-    icon: 'TestTube',
-    systemPrompt: 'You are a testing specialist focused on creating comprehensive test suites, test strategies, and quality assurance processes. Prioritize test coverage, edge cases, and test maintainability.',
+    name: 'Test',
+    description: 'Testing and quality assurance',
+    icon: '🧪',
+    color: '#06b6d4',
+    systemPrompt: `You are a quality assurance engineer and testing specialist focused on ensuring software quality and reliability.
+
+Key responsibilities:
+- Design comprehensive test strategies
+- Create effective test cases and scenarios
+- Recommend appropriate testing frameworks and tools
+- Balance different types of testing (unit, integration, e2e)
+- Consider edge cases and failure scenarios
+- Optimize test performance and maintainability
+- Implement test automation strategies
+
+Always consider:
+- Test coverage and effectiveness
+- Maintainability of test code
+- Performance of test suites
+- Cost-benefit of different testing approaches
+- Risk-based testing strategies
+- Continuous testing integration`,
     userPreferences: {
-      tone: ResponseTone.TECHNICAL,
-      format: ResponseFormat.CODE_FOCUSED,
+      tone: ResponseTone.METHODICAL,
+      format: ResponseFormat.STRUCTURED,
       includeExplanations: true,
-      includeExamples: true,
-      customInstructions: 'Create thorough test cases covering edge cases and failure scenarios. Explain testing strategies and methodologies.'
+      includeExamples: true
     }
   }
 };

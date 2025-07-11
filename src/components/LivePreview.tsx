@@ -1,184 +1,177 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { generateStandaloneHtml } from '../services/response-handler';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Maximize, Minimize, RefreshCw } from 'lucide-react';
+import { RefreshCw, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 
 interface LivePreviewProps {
-  html?: string;
-  css?: string;
-  js?: string;
-  autoReload?: boolean;
+  code: string;
   onReload?: () => void;
 }
 
-/**
- * LivePreview renders HTML/CSS/JS in an iframe sandbox
- */
 export const LivePreview: React.FC<LivePreviewProps> = ({
-  html,
-  css,
-  js,
-  autoReload = false,
+  code,
   onReload
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [iframeHeight, setIframeHeight] = useState(400);
-  const [iframeWidth, setIframeWidth] = useState('100%');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Create the combined HTML to inject into the iframe
-  const combinedHtml = generateStandaloneHtml({
-    codeBlocks: {
-      html: html || '',
-      css: css || '',
-      js: js || ''
-    },
-    meta: {
-      model: '',
-      provider: '',
-      cost: 0,
-      tokens: {
-        input: 0,
-        output: 0,
-        total: 0
-      },
-      timestamp: Date.now(),
-      duration: 0
-    }
-  });
-
-  // Update the iframe content
-  const updateIframe = () => {
-    if (!iframeRef.current) return;
+  // Extract HTML, CSS, and JS from code
+  const extractCodeBlocks = (code: string) => {
+    const htmlMatch = code.match(/```html\s*([\s\S]*?)```/i);
+    const cssMatch = code.match(/```css\s*([\s\S]*?)```/i);
+    const jsMatch = code.match(/```(?:js|javascript)\s*([\s\S]*?)```/i);
     
+    return {
+      html: htmlMatch?.[1]?.trim() || '',
+      css: cssMatch?.[1]?.trim() || '',
+      js: jsMatch?.[1]?.trim() || ''
+    };
+  };
+
+  const { html, css, js } = extractCodeBlocks(code);
+
+  // Create combined HTML document
+  const createPreviewHtml = () => {
+    if (!html && !css && !js) return '<p>No preview available</p>';
+    
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Preview</title>
+  <style>
+    body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; }
+    ${css}
+  </style>
+</head>
+<body>
+  ${html}
+  <script>
     try {
-      const iframe = iframeRef.current;
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      
-      if (!doc) {
-        setError('Could not access iframe document');
-        return;
+      ${js}
+    } catch (e) {
+      console.error('Preview JS Error:', e);
+      document.body.innerHTML += '<div style="color: red; padding: 10px; border: 1px solid red; margin: 10px 0;">JS Error: ' + e.message + '</div>';
+    }
+  </script>
+</body>
+</html>`;
+  };
+
+  // Update iframe content
+  const updateIframe = () => {
+    try {
+      if (iframeRef.current) {
+        const doc = iframeRef.current.contentDocument;
+        if (doc) {
+          doc.open();
+          doc.write(createPreviewHtml());
+          doc.close();
+          setError(null);
+        }
       }
-      
-      // Clear existing content
-      doc.open();
-      doc.write(combinedHtml);
-      doc.close();
-      
-      // Try to catch window errors
-      iframe.contentWindow?.addEventListener('error', (e) => {
-        setError(`JavaScript error: ${e.message}`);
-      });
-      
-      setError(null);
-    } catch (err) {
-      setError(`Error rendering preview: ${err instanceof Error ? err.message : String(err)}`);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error updating iframe:', err);
     }
   };
 
-  // Update iframe when code changes
   useEffect(() => {
-    if (autoReload) {
-      updateIframe();
-    }
-  }, [html, css, js, autoReload]);
+    updateIframe();
+  }, [code]);
 
-  // Toggle fullscreen preview
   const toggleFullscreen = () => {
-    if (isFullscreen) {
-      // Exit fullscreen
-      setIframeHeight(400);
-      setIframeWidth('100%');
-    } else {
-      // Enter fullscreen
-      setIframeHeight(window.innerHeight * 0.8);
-      setIframeWidth('100%');
-    }
     setIsFullscreen(!isFullscreen);
   };
 
-  // Define different device sizes
-  const deviceSizes = [
-    { name: 'Mobile', width: '375px', height: 667 },
-    { name: 'Tablet', width: '768px', height: 800 },
-    { name: 'Desktop', width: '100%', height: 800 }
-  ];
-
-  // Change device size
-  const changeDeviceSize = (width: string, height: number) => {
-    setIframeWidth(width);
-    setIframeHeight(height);
+  const openInNewTab = () => {
+    const previewHtml = createPreviewHtml();
+    const blob = new Blob([previewHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  const hasPreviewableContent = html || css || js;
+
   return (
-    <Card className="overflow-hidden border border-gray-700 bg-gray-950">
-      <div className="flex justify-between items-center p-2 border-b border-gray-700">
-        <Tabs defaultValue="desktop" className="w-auto">
-          <TabsList>
-            {deviceSizes.map(device => (
-              <TabsTrigger 
-                key={device.name}
-                value={device.name.toLowerCase()}
-                onClick={() => changeDeviceSize(device.width, device.height)}
-              >
-                {device.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+    <Card className={`cyberborder ice-card hover-glow flex flex-col ${isFullscreen ? 'fixed inset-4 z-50' : 'h-[400px]'}`}>
+      <div className="p-3 border-b border-cyber-bright-blue border-opacity-30 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
+          <h3 className="font-orbitron text-sm text-cyber-bright-blue">Live Preview</h3>
+        </div>
         
-        <div className="flex space-x-2">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={() => {
-              updateIframe();
-              if (onReload) onReload();
-            }}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={updateIframe}
+            className="h-7 w-7 p-0 text-cyber-black hover:text-cyber-bright-blue"
+            title="Refresh Preview"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-3 w-3" />
           </Button>
           
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={toggleFullscreen}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={openInNewTab}
+            className="h-7 w-7 p-0 text-cyber-black hover:text-cyber-bright-blue"
+            title="Open in New Tab"
+            disabled={!hasPreviewableContent}
           >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="h-7 w-7 p-0 text-cyber-black hover:text-cyber-bright-blue"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
           </Button>
         </div>
       </div>
       
-      <div 
-        className="bg-white overflow-hidden transition-all duration-300 flex justify-center"
-        style={{ padding: iframeWidth !== '100%' ? '1rem' : 0 }}
-      >
-        <iframe
-          ref={iframeRef}
-          title="Live Preview"
-          sandbox="allow-scripts allow-same-origin"
-          className="border-0 bg-white transition-all duration-300"
-          style={{ 
-            width: iframeWidth, 
-            height: `${iframeHeight}px`,
-            maxWidth: '100%'
-          }}
-        />
+      <div className="flex-1 relative overflow-hidden">
+        {hasPreviewableContent ? (
+          <iframe
+            ref={iframeRef}
+            title="Live Preview"
+            sandbox="allow-scripts allow-same-origin"
+            className="w-full h-full border-0 bg-white"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-cyber-black opacity-60">
+            <div className="text-center">
+              <ExternalLink className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No previewable content</p>
+              <p className="text-xs mt-1">Generate HTML, CSS, or JavaScript to see preview</p>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="absolute inset-0 bg-red-50 border border-red-200 p-4 overflow-auto">
+            <p className="font-medium text-red-800 mb-2">Preview Error:</p>
+            <pre className="text-xs text-red-700 whitespace-pre-wrap">{error}</pre>
+          </div>
+        )}
       </div>
       
-      {error && (
-        <div className="p-4 bg-red-900 text-white text-sm">
-          <p className="font-semibold">Preview Error:</p>
-          <pre className="mt-1 text-xs overflow-auto">{error}</pre>
+      <div className="p-2 border-t border-cyber-bright-blue border-opacity-30 text-xs text-cyber-black opacity-60">
+        <div className="flex items-center justify-between">
+          <span>Sandboxed preview environment</span>
+          {hasPreviewableContent && (
+            <span className="text-green-600">● Ready</span>
+          )}
         </div>
-      )}
-      
-      <div className="p-2 border-t border-gray-700 text-xs text-gray-400">
-        Preview updates {autoReload ? 'automatically' : 'on reload'}.
-        <span className="italic"> Sandbox restrictions apply.</span>
       </div>
     </Card>
   );

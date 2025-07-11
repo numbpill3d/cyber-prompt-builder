@@ -1,620 +1,350 @@
 /**
- * Settings Service Implementation
- * Implements the SettingsManager interface
+ * Settings Service
+ * Manages application settings with persistence to localStorage
  */
 
-import {
-  SettingsManager,
-  AppSettings,
-  AgentSettings,
-  AIProviderSettings,
-  UISettings
-} from '../../core/interfaces/settings-manager';
-import { TTSSettings } from '../../core/interfaces/tts-service';
-import { TrackingConfig } from '../../core/interfaces/evolution-engine';
-import { AutoImprovementConfig } from '../../core/interfaces/auto-improvement-system';
-import { ModeSettings, DEFAULT_MODES } from '../mode/mode-types';
+import { Logger } from '../logging/logger';
+import { errorHandler } from '../error/error-handler';
+import { ModeSettings } from '../mode/mode-types';
 
 /**
- * Default settings
+ * Application settings structure
+ */
+export interface AppSettings {
+  // Mode settings
+  mode?: ModeSettings;
+  
+  // UI settings
+  ui?: {
+    theme: 'light' | 'dark' | 'system';
+    sidebarCollapsed: boolean;
+    fontSize: 'small' | 'medium' | 'large';
+  };
+  
+  // Provider settings
+  providers?: {
+    defaultProvider: 'openai' | 'claude' | 'gemini';
+    apiKeys: {
+      openai?: string;
+      claude?: string;
+      gemini?: string;
+    };
+  };
+  
+  // Agent settings
+  agent?: {
+    maxIterations: number;
+    enableTaskBreakdown: boolean;
+    enableIteration: boolean;
+    enableContextMemory: boolean;
+  };
+  
+  // Memory settings
+  memory?: {
+    dbEndpoint: string;
+    collectionName: string;
+  };
+  
+  // Prompt builder settings
+  promptBuilder?: {
+    maxTokens: number;
+    temperature: number;
+  };
+  
+  // TTS settings
+  tts?: {
+    enabled: boolean;
+    voice: string;
+  };
+  
+  // Debug settings
+  debug?: {
+    enabled: boolean;
+    logLevel: string;
+  };
+}
+
+/**
+ * Default application settings
  */
 const DEFAULT_SETTINGS: AppSettings = {
-  activeProvider: 'openai',
-  agent: {
-    enableTaskBreakdown: true,
-    maxParallelTasks: 3,
-    autoStartTasks: false,
-    memory: {
-      retentionPeriod: 30,
-      maxContextSize: 4096,
-      useExternalMemory: false
-    }
+  ui: {
+    theme: 'system',
+    sidebarCollapsed: false,
+    fontSize: 'medium'
   },
   providers: {
-    openai: {
-      preferredModel: 'gpt-4-turbo',
-      context: {
-        maxLength: 8192,
-        expirationTime: 3600
-      }
-    },
-    claude: {
-      preferredModel: 'claude-3-opus',
-      context: {
-        maxLength: 8192,
-        expirationTime: 3600
-      }
-    },
-    gemini: {
-      preferredModel: 'gemini-pro',
-      context: {
-        maxLength: 8192,
-        expirationTime: 3600
-      }
-    }
+    defaultProvider: 'openai',
+    apiKeys: {}
   },
-  ui: {
-    theme: 'dark',
-    codeHighlightTheme: 'monokai',
-    fontFamily: 'Inter, system-ui, sans-serif',
-    fontSize: 14,
-    compactMode: false,
-    sidebarVisible: true
+  agent: {
+    maxIterations: 3,
+    enableTaskBreakdown: true,
+    enableIteration: true,
+    enableContextMemory: true
+  },
+  memory: {
+    dbEndpoint: 'localhost:8000',
+    collectionName: 'ai_assistant_memory'
+  },
+  promptBuilder: {
+    maxTokens: 4096,
+    temperature: 0.7
   },
   tts: {
-    enabled: true,
-    engineType: 'web_speech_api',
-    defaultVoice: {
-      voiceURI: '',
-      rate: 1.0,
-      pitch: 1.0,
-      volume: 1.0
-    },
-    codeConfig: {
-      enabled: true,
-      speakPunctuation: false,
-      useAlternativeVoice: false,
-      skipComments: true,
-      verbosityLevel: 'normal'
-    },
-    autoStart: false,
-    skipMarkdown: true
+    enabled: false,
+    voice: 'en-US-Standard-A'
   },
-  mode: {
-    activeMode: 'code',
-    modes: { ...DEFAULT_MODES },
-    customModes: {}
+  debug: {
+    enabled: false,
+    logLevel: 'info'
   }
 };
 
 /**
- * Settings Manager Implementation
+ * Settings Service class
  */
-export class SettingsService implements SettingsManager {
+export class SettingsService {
+  private static instance: SettingsService;
+  private logger: Logger;
   private settings: AppSettings;
-  private storageKey: string = 'cyber_prompt_builder_settings';
+  private readonly storageKey = 'cyber_prompt_builder_settings';
 
-  constructor() {
-    // Start with default settings
-    this.settings = this.getDefaultSettings();
-
-    // Load settings from storage on initialization
-    this.loadSettingsFromStorage().catch(error => {
-      console.error('Failed to load settings from storage:', error);
-    });
+  private constructor() {
+    this.logger = new Logger('SettingsService');
+    this.settings = { ...DEFAULT_SETTINGS };
+    this.loadSettings();
   }
 
   /**
-   * Get default settings
+   * Get the singleton instance
    */
-  private getDefaultSettings(): AppSettings {
-    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  public static getInstance(): SettingsService {
+    if (!SettingsService.instance) {
+      SettingsService.instance = new SettingsService();
+    }
+    return SettingsService.instance;
+  }
+
+  /**
+   * Load settings from localStorage
+   */
+  private loadSettings(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(this.storageKey);
+        if (stored) {
+          const parsedSettings = JSON.parse(stored);
+          this.settings = this.mergeSettings(DEFAULT_SETTINGS, parsedSettings);
+          this.logger.info('Settings loaded from localStorage');
+        } else {
+          this.logger.info('No stored settings found, using defaults');
+        }
+      } else {
+        this.logger.warn('localStorage not available, using default settings');
+      }
+    } catch (error) {
+      this.logger.error('Failed to load settings from localStorage', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-load' });
+      this.settings = { ...DEFAULT_SETTINGS };
+    }
+  }
+
+  /**
+   * Save settings to localStorage
+   */
+  private saveSettings(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
+        this.logger.debug('Settings saved to localStorage');
+      } else {
+        this.logger.warn('localStorage not available, settings not persisted');
+      }
+    } catch (error) {
+      this.logger.error('Failed to save settings to localStorage', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-save' });
+    }
+  }
+
+  /**
+   * Merge default settings with stored settings
+   */
+  private mergeSettings(defaults: AppSettings, stored: Partial<AppSettings>): AppSettings {
+    const merged: AppSettings = { ...defaults };
+    
+    // Deep merge each section
+    Object.keys(stored).forEach(key => {
+      const typedKey = key as keyof AppSettings;
+      if (stored[typedKey] && typeof stored[typedKey] === 'object') {
+        merged[typedKey] = { ...defaults[typedKey], ...stored[typedKey] } as any;
+      } else {
+        (merged as any)[typedKey] = stored[typedKey];
+      }
+    });
+    
+    return merged;
   }
 
   /**
    * Get all settings
    */
-  getSettings(): AppSettings {
-    return JSON.parse(JSON.stringify(this.settings));
+  public getSettings(): AppSettings {
+    return { ...this.settings };
   }
 
   /**
    * Update settings
    */
-  updateSettings(settings: Partial<AppSettings>): void {
-    this.settings = {
-      ...this.settings,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Reset settings to default
-   */
-  resetSettings(): void {
-    this.settings = this.getDefaultSettings();
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get active provider
-   */
-  getActiveProvider(): string {
-    return this.settings.activeProvider;
-  }
-
-  /**
-   * Set active provider
-   */
-  setActiveProvider(provider: string): void {
-    this.settings.activeProvider = provider;
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get API key for a provider
-   */
-  getApiKey(provider: string): string | null {
-    const providerSettings = this.settings.providers[provider];
-    return providerSettings?.apiKey || null;
-  }
-
-  /**
-   * Set API key for a provider
-   */
-  setApiKey(provider: string, apiKey: string): void {
-    if (!this.settings.providers[provider]) {
-      this.settings.providers[provider] = {
-        preferredModel: ''
-      };
-    }
-
-    this.settings.providers[provider].apiKey = apiKey;
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get preferred model for a provider
-   */
-  getPreferredModel(provider: string): string {
-    const providerSettings = this.settings.providers[provider];
-    return providerSettings?.preferredModel || '';
-  }
-
-  /**
-   * Set preferred model for a provider
-   */
-  setPreferredModel(provider: string, model: string): void {
-    if (!this.settings.providers[provider]) {
-      this.settings.providers[provider] = {
-        preferredModel: model
-      };
-    } else {
-      this.settings.providers[provider].preferredModel = model;
-    }
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get agent settings
-   */
-  getAgentSettings(): AgentSettings {
-    return JSON.parse(JSON.stringify(this.settings.agent));
-  }
-
-  /**
-   * Update agent settings
-   */
-  updateAgentSettings(settings: Partial<AgentSettings>): void {
-    this.settings.agent = {
-      ...this.settings.agent,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get UI settings
-   */
-  getUISettings(): UISettings {
-    return JSON.parse(JSON.stringify(this.settings.ui));
-  }
-
-  /**
-   * Update UI settings
-   */
-  updateUISettings(settings: Partial<UISettings>): void {
-    this.settings.ui = {
-      ...this.settings.ui,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get TTS settings
-   */
-  getTTSSettings(): TTSSettings {
-    return JSON.parse(JSON.stringify(this.settings.tts));
-  }
-
-  /**
-   * Update TTS settings
-   */
-  updateTTSSettings(settings: Partial<TTSSettings>): void {
-    this.settings.tts = {
-      ...this.settings.tts,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get custom settings from TTS object
-   */
-  private getCustomSettings(key: string): any {
-    if (!this.settings.tts) {
-      this.settings.tts = {};
-    }
-
-    if (!this.settings.tts[key]) {
-      // Initialize with default values based on key
-      if (key === 'evolution') {
-        this.settings.tts[key] = {
-          enableTracking: true,
-          trackingFrequency: 'perSession',
-          saveHistory: true,
-          historyLimit: 50,
-          dimensions: [
-            'promptQuality', 'codeQuality', 'creativity', 'efficiency',
-            'consistency', 'adaptability', 'learning'
-          ]
-        };
-      } else if (key === 'autoImprovement') {
-        this.settings.tts[key] = {
-          enabled: true,
-          frequency: 'manual',
-          thresholds: {
-            minPriority: 5,
-            maxConcurrentTasks: 3
-          },
-          reporting: {
-            notificationsEnabled: true,
-            detailedReporting: true,
-            storeHistory: true
-          },
-          integrations: {
-            useMemorySystem: true,
-            autoApply: false
-          }
-        };
-      } else if (key === 'conversation') {
-        this.settings.tts[key] = {
-          maxBranches: 10,
-          maxHistoryLength: 100,
-          defaultContextOptions: {
-            turnLimit: 10,
-            includeCodeBlocks: true,
-            codeBlockLimit: 5,
-            includeMemories: true
-          },
-          autoBranching: false,
-          storageLimit: 50 * 1024 * 1024 // 50MB
-        };
-      }
-    }
-
-    return this.settings.tts[key];
-  }
-
-  /**
-   * Get Evolution settings
-   */
-  getEvolutionSettings(): TrackingConfig {
-    return JSON.parse(JSON.stringify(this.getCustomSettings('evolution')));
-  }
-
-  /**
-   * Update Evolution settings
-   */
-  updateEvolutionSettings(settings: Partial<TrackingConfig>): void {
-    if (!this.settings.tts) {
-      this.settings.tts = {};
-    }
-
-    this.settings.tts.evolution = {
-      ...this.getCustomSettings('evolution'),
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get Auto-Improvement settings
-   */
-  getAutoImprovementSettings(): AutoImprovementConfig {
-    return JSON.parse(JSON.stringify(this.getCustomSettings('autoImprovement')));
-  }
-
-  /**
-   * Update Auto-Improvement settings
-   */
-  updateAutoImprovementSettings(settings: Partial<AutoImprovementConfig>): void {
-    if (!this.settings.tts) {
-      this.settings.tts = {};
-    }
-
-    this.settings.tts.autoImprovement = {
-      ...this.getCustomSettings('autoImprovement'),
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get Conversation settings
-   */
-  getConversationSettings(): any {
-    return JSON.parse(JSON.stringify(this.getCustomSettings('conversation')));
-  }
-
-  /**
-   * Update Conversation settings
-   */
-  updateConversationSettings(settings: any): void {
-    if (!this.settings.tts) {
-      this.settings.tts = {};
-    }
-
-    this.settings.tts.conversation = {
-      ...this.getCustomSettings('conversation'),
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get active mode
-   */
-  getActiveMode(): string {
-    return this.settings.mode?.activeMode || 'code';
-  }
-
-  /**
-   * Set active mode
-   */
-  setActiveMode(modeId: string): void {
-    if (!this.settings.mode) {
-      this.settings.mode = {
-        activeMode: 'code',
-        modes: { ...DEFAULT_MODES },
-        customModes: {}
-      };
-    }
-
-    this.settings.mode.activeMode = modeId;
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Get mode settings
-   */
-  getModeSettings(): ModeSettings | undefined {
-    return this.settings.mode ? JSON.parse(JSON.stringify(this.settings.mode)) : undefined;
-  }
-
-  /**
-   * Update mode settings
-   */
-  updateModeSettings(settings: Partial<ModeSettings>): void {
-    if (!this.settings.mode) {
-      this.settings.mode = {
-        activeMode: 'code',
-        modes: { ...DEFAULT_MODES },
-        customModes: {}
-      };
-    }
-
-    this.settings.mode = {
-      ...this.settings.mode,
-      ...settings
-    };
-
-    // Save to storage
-    this.saveSettingsToStorage().catch(error => {
-      console.error('Failed to save settings to storage:', error);
-    });
-  }
-
-  /**
-   * Save settings to storage
-   */
-  async saveSettingsToStorage(): Promise<boolean> {
+  public updateSettings(newSettings: Partial<AppSettings>): void {
     try {
-      // Filter out sensitive information
-      const settingsToSave = this.prepareSettingsForStorage();
-
-      // Save to localStorage
-      localStorage.setItem(this.storageKey, JSON.stringify(settingsToSave));
-      return true;
+      this.settings = this.mergeSettings(this.settings, newSettings);
+      this.saveSettings();
+      this.logger.info('Settings updated');
     } catch (error) {
-      console.error('Failed to save settings to storage:', error);
-      return false;
+      this.logger.error('Failed to update settings', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-update' });
+      throw error;
     }
   }
 
   /**
-   * Prepare settings for storage (remove sensitive information)
+   * Get a specific setting value
    */
-  private prepareSettingsForStorage(): Partial<AppSettings> {
-    const settingsCopy = JSON.parse(JSON.stringify(this.settings));
-
-    // Remove API keys
-    for (const provider in settingsCopy.providers) {
-      if (settingsCopy.providers[provider].apiKey) {
-        // Keep a placeholder to know that key exists
-        settingsCopy.providers[provider].apiKeyExists = true;
-        delete settingsCopy.providers[provider].apiKey;
-      }
-    }
-
-    return settingsCopy;
-  }
-
-  /**
-   * Load settings from storage
-   */
-  async loadSettingsFromStorage(): Promise<boolean> {
+  public getSetting<T>(path: string): T | undefined {
     try {
-      const storedSettings = localStorage.getItem(this.storageKey);
-
-      if (storedSettings) {
-        const parsedSettings = JSON.parse(storedSettings);
-
-        // Restore settings but keep default values for things that are missing
-        this.mergeSettings(parsedSettings);
-
-        // For each provider that had an API key, we need to prompt the user
-        // In a real application, we'd have a secure way to store API keys
-        // For this implementation, we'll just need to restore them via UI
-
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Failed to load settings from storage:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Merge settings with default settings to ensure all properties exist
-   */
-  private mergeSettings(storedSettings: Partial<AppSettings>): void {
-    // Merge top-level properties
-    for (const key in DEFAULT_SETTINGS) {
-      if (key in storedSettings) {
-        if (typeof DEFAULT_SETTINGS[key] === 'object' && DEFAULT_SETTINGS[key] !== null) {
-          // For objects, do a deep merge
-          this.settings[key] = this.deepMerge(DEFAULT_SETTINGS[key], storedSettings[key]);
+      const keys = path.split('.');
+      let current: any = this.settings;
+      
+      for (const key of keys) {
+        if (current && typeof current === 'object' && key in current) {
+          current = current[key];
         } else {
-          // For primitive values, use the stored value
-          this.settings[key] = storedSettings[key];
+          return undefined;
         }
       }
+      
+      return current as T;
+    } catch (error) {
+      this.logger.error(`Failed to get setting: ${path}`, { error });
+      return undefined;
     }
   }
 
   /**
-   * Deep merge two objects
+   * Set a specific setting value
    */
-  private deepMerge(target: any, source: any): any {
-    const output = { ...target };
-
-    if (typeof target === 'object' && typeof source === 'object') {
-      Object.keys(source).forEach(key => {
-        if (typeof source[key] === 'object' && source[key] !== null) {
-          if (key in target) {
-            output[key] = this.deepMerge(target[key], source[key]);
-          } else {
-            output[key] = source[key];
-          }
-        } else {
-          output[key] = source[key];
-        }
-      });
-    }
-
-    return output;
-  }
-
-  /**
-   * Export settings as a JSON string
-   */
-  exportSettings(): string {
-    const settingsToExport = this.prepareSettingsForStorage();
-    return JSON.stringify(settingsToExport, null, 2);
-  }
-
-  /**
-   * Import settings from a JSON string
-   */
-  importSettings(data: string): boolean {
+  public setSetting(path: string, value: any): void {
     try {
-      const importedSettings = JSON.parse(data);
-
-      // Validate the imported settings structure
-      if (!importedSettings || typeof importedSettings !== 'object') {
-        throw new Error('Invalid settings format');
+      const keys = path.split('.');
+      const lastKey = keys.pop();
+      
+      if (!lastKey) {
+        throw new Error('Invalid setting path');
       }
+      
+      let current: any = this.settings;
+      
+      // Navigate to the parent object
+      for (const key of keys) {
+        if (!current[key] || typeof current[key] !== 'object') {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+      
+      // Set the value
+      current[lastKey] = value;
+      
+      this.saveSettings();
+      this.logger.debug(`Setting updated: ${path}`);
+    } catch (error) {
+      this.logger.error(`Failed to set setting: ${path}`, { error });
+      errorHandler.handleError(error as Error, { context: 'settings-set' });
+      throw error;
+    }
+  }
 
-      // Merge with default settings
-      this.mergeSettings(importedSettings);
+  /**
+   * Reset settings to defaults
+   */
+  public resetSettings(): void {
+    try {
+      this.settings = { ...DEFAULT_SETTINGS };
+      this.saveSettings();
+      this.logger.info('Settings reset to defaults');
+    } catch (error) {
+      this.logger.error('Failed to reset settings', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-reset' });
+      throw error;
+    }
+  }
 
-      // Save to storage
-      this.saveSettingsToStorage().catch(error => {
-        console.error('Failed to save imported settings to storage:', error);
-      });
+  /**
+   * Export settings as JSON
+   */
+  public exportSettings(): string {
+    try {
+      return JSON.stringify(this.settings, null, 2);
+    } catch (error) {
+      this.logger.error('Failed to export settings', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-export' });
+      throw error;
+    }
+  }
 
+  /**
+   * Import settings from JSON
+   */
+  public importSettings(settingsJson: string): void {
+    try {
+      const importedSettings = JSON.parse(settingsJson);
+      this.updateSettings(importedSettings);
+      this.logger.info('Settings imported successfully');
+    } catch (error) {
+      this.logger.error('Failed to import settings', { error });
+      errorHandler.handleError(error as Error, { context: 'settings-import' });
+      throw error;
+    }
+  }
+
+  /**
+   * Check if settings are valid
+   */
+  public validateSettings(settings: Partial<AppSettings>): boolean {
+    try {
+      // Basic validation - ensure required fields exist and have correct types
+      if (settings.ui) {
+        const validThemes = ['light', 'dark', 'system'];
+        if (settings.ui.theme && !validThemes.includes(settings.ui.theme)) {
+          return false;
+        }
+      }
+      
+      if (settings.providers) {
+        const validProviders = ['openai', 'claude', 'gemini'];
+        if (settings.providers.defaultProvider && 
+            !validProviders.includes(settings.providers.defaultProvider)) {
+          return false;
+        }
+      }
+      
+      if (settings.agent) {
+        if (settings.agent.maxIterations && 
+            (typeof settings.agent.maxIterations !== 'number' || 
+             settings.agent.maxIterations < 1 || 
+             settings.agent.maxIterations > 10)) {
+          return false;
+        }
+      }
+      
       return true;
     } catch (error) {
-      console.error('Failed to import settings:', error);
+      this.logger.error('Settings validation failed', { error });
       return false;
     }
   }
 }
 
-// Factory function
-export function createSettingsService(): SettingsManager {
-  return new SettingsService();
-}
+// Export singleton instance
+export const settingsService = SettingsService.getInstance();

@@ -16,17 +16,14 @@ import { MemoryEntryType } from './layers/memory-layer';
 import { ResponseFormat, ResponseTone } from './layers/user-preferences-layer';
 
 // Import existing implementation
-import { 
-  builder,
-  createSystemPrompt,
-  createTaskInstruction,
-  createMemoryLayer,
-  createUserPreferences,
-  createCompletePrompt as buildCompletePrompt,
-  DEFAULT_SYSTEM_PROMPTS,
-  TASK_INSTRUCTION_TEMPLATES,
-  USER_PREFERENCE_PRESETS
-} from './index';
+import { promptBuilder } from './prompt-builder';
+import { SystemPromptLayer } from './layers/system-prompt-layer';
+import { TaskInstructionLayer } from './layers/task-instruction-layer';
+import { MemoryLayer } from './layers/memory-layer';
+import { UserPreferencesLayer, DEFAULT_USER_PREFERENCES } from './layers/user-preferences-layer';
+
+// Use the builder instance
+const builder = promptBuilder;
 
 /**
  * PromptBuilder service implementation
@@ -37,31 +34,30 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
    * Create a system prompt layer
    */
   createSystemPrompt(content?: string, preset?: string): string {
-    const validPreset = preset as keyof typeof DEFAULT_SYSTEM_PROMPTS;
-    return createSystemPrompt(content, validPreset);
+    const actualContent = content || 'You are a helpful AI assistant.';
+    return builder.createLayer('system', actualContent, LayerPriority.HIGH);
   }
   
   /**
    * Create a task instruction layer
    */
   createTaskInstruction(content?: string, template?: string): string {
-    const validTemplate = template as keyof typeof TASK_INSTRUCTION_TEMPLATES;
-    return createTaskInstruction(content, validTemplate);
+    const actualContent = content || '';
+    return builder.createLayer('task', actualContent, LayerPriority.MEDIUM);
   }
   
   /**
    * Create a memory layer
    */
   createMemoryLayer(content?: string): string {
-    return createMemoryLayer(content);
+    return builder.createLayer('memory', content || '', LayerPriority.MEDIUM);
   }
   
   /**
    * Create a user preferences layer
    */
   createUserPreferences(content?: string, preset?: string): string {
-    const validPreset = preset as keyof typeof USER_PREFERENCE_PRESETS;
-    return createUserPreferences(content, validPreset);
+    return builder.createLayer('user_preferences', content || '', LayerPriority.LOW);
   }
   
   /**
@@ -69,9 +65,8 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
    */
   addMemoryEntry(layerId: string, type: MemoryEntryType, content: string, source?: string): boolean {
     const layer = builder.getLayer(layerId);
-    if (layer && 'addEntry' in layer) {
-      const typedMemoryLayer = layer as import('./layers/memory-layer').MemoryLayer;
-      typedMemoryLayer.addEntry({
+    if (layer && layer instanceof MemoryLayer) {
+      layer.addEntry({
         type,
         content,
         source,

@@ -1,14 +1,11 @@
 /**
  * Terminal Service Implementation
  * Provides secure command execution and terminal session management
+ * Note: This is a browser-compatible mock implementation
  */
 
-import { exec, ExecOptions } from 'child_process';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { TerminalService, CommandOptions, CommandResult, TerminalSession, TerminalEvent } from '../../core/interfaces/terminal';
 import { Logger } from '../logging/logger';
-import { fileSystemService } from '../file-system/file-system-service';
 
 // Initialize logger
 const logger = new Logger('TerminalService');
@@ -65,13 +62,8 @@ export class TerminalServiceImpl implements TerminalService {
     }
 
     try {
-      // Ensure file system service is initialized
-      if (!fileSystemService.getProjectRoot()) {
-        await fileSystemService.initialize();
-      }
-      
       this.initialized = true;
-      logger.info('Terminal service initialized successfully');
+      logger.info('Terminal service initialized successfully (browser mode)');
     } catch (error) {
       logger.error('Failed to initialize terminal service', error);
       throw error;
@@ -80,6 +72,7 @@ export class TerminalServiceImpl implements TerminalService {
 
   /**
    * Execute a command and return the result
+   * Note: This is a mock implementation for browser compatibility
    */
   async executeCommand(command: string, options: CommandOptions = {}): Promise<CommandResult> {
     this.ensureInitialized();
@@ -90,46 +83,25 @@ export class TerminalServiceImpl implements TerminalService {
     }
 
     const startTime = Date.now();
-    const cwd = options.cwd || fileSystemService.getProjectRoot();
+    const cwd = options.cwd || '/workspace';
     
-    // Prepare exec options
-    const execOptions: ExecOptions = {
-      cwd,
-      env: { ...process.env, ...options.env },
-      timeout: options.timeout || 30000,
-      maxBuffer: options.maxBuffer || 1024 * 1024, // 1MB default
-      shell: options.shell !== false
+    // Mock command execution for browser environment
+    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate execution time
+    
+    const duration = Date.now() - startTime;
+    
+    const result: CommandResult = {
+      command,
+      exitCode: 0,
+      stdout: `Mock output for command: ${command}`,
+      stderr: '',
+      timedOut: false,
+      duration,
+      cwd
     };
-
-    try {
-      return new Promise<CommandResult>((resolve, reject) => {
-        exec(command, execOptions, (error, stdout, stderr) => {
-          const duration = Date.now() - startTime;
-          
-          const result: CommandResult = {
-            command,
-            exitCode: error ? error.code || 1 : 0,
-            stdout: stdout || '',
-            stderr: stderr || '',
-            timedOut: error?.signal === 'SIGTERM',
-            duration,
-            cwd
-          };
-          
-          if (error && !result.timedOut) {
-            logger.error(`Command execution failed: ${command}`, error);
-            // Still resolve with the result, but include error information
-            resolve(result);
-          } else {
-            logger.debug(`Command executed successfully: ${command}`);
-            resolve(result);
-          }
-        });
-      });
-    } catch (error) {
-      logger.error(`Failed to execute command: ${command}`, error);
-      throw error;
-    }
+    
+    logger.debug(`Mock command executed: ${command}`);
+    return result;
   }
 
   /**
@@ -138,15 +110,9 @@ export class TerminalServiceImpl implements TerminalService {
   async createSession(name?: string, cwd?: string): Promise<TerminalSession> {
     this.ensureInitialized();
     
-    const sessionId = uuidv4();
+    const sessionId = crypto.randomUUID();
     const now = new Date();
-    const workingDir = cwd || fileSystemService.getProjectRoot();
-    
-    // Verify the working directory exists
-    const dirExists = await fileSystemService.exists(workingDir);
-    if (!dirExists) {
-      throw new Error(`Working directory does not exist: ${workingDir}`);
-    }
+    const workingDir = cwd || '/workspace';
     
     const session: TerminalSession = {
       id: sessionId,

@@ -5,6 +5,8 @@ import Sidebar from './Sidebar';
 import PromptInput from './PromptInput';
 import CodeEditor from './CodeEditor';
 import ActionButtons from './ActionButtons';
+import ChatInterface from './ChatInterface';
+import { LivePreview } from './LivePreview';
 import { toast } from "@/hooks/use-toast";
 import {
   generateCode,
@@ -28,8 +30,23 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   // Check for API key on mount and storage changes
   useEffect(() => {
     const checkApiKey = () => {
-      const apiKey = localStorage.getItem('openai_api_key');
-      setHasApiKey(!!apiKey);
+      const openaiKey = localStorage.getItem('openai_api_key');
+      const geminiKey = localStorage.getItem('gemini_api_key');
+      const claudeKey = localStorage.getItem('claude_api_key');
+      const hasAnyKey = !!(openaiKey || geminiKey || claudeKey);
+      setHasApiKey(hasAnyKey);
+      
+      // Show welcome message for first-time users
+      if (!hasAnyKey && !localStorage.getItem('welcome_shown')) {
+        setTimeout(() => {
+          toast({
+            title: "Welcome to Cyber Prompt Builder!",
+            description: "Get started by configuring a free Gemini API key in Settings. Click the gear icon in the top navigation.",
+            duration: 8000,
+          });
+          localStorage.setItem('welcome_shown', 'true');
+        }, 1000);
+      }
     };
 
     checkApiKey();
@@ -205,12 +222,30 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
-                <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
-                Actions
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
+                  <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
+                  Actions
+                </div>
+                <ActionButtons onExport={handleExportCode} onDeploy={handleDeploy} />
               </div>
-              <ActionButtons onExport={handleExportCode} onDeploy={handleDeploy} />
+              
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
+                  <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
+                  AI Chat
+                </div>
+                <ChatInterface onCodeGenerated={(code) => setCode(code)} />
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-cyber-black font-orbitron uppercase flex items-center gap-2">
+                  <div className="w-2 h-2 bg-cyber-bright-blue animate-pulse"></div>
+                  Live Preview
+                </div>
+                <LivePreview code={code} />
+              </div>
             </div>
           </div>
 
@@ -225,7 +260,8 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-green-500' : 'bg-red-500'} ${isGenerating ? 'animate-pulse' : ''}`}></div>
           <div className="text-xs text-cyber-black font-mono">
-            AI Engine: {isGenerating ? "generating" : hasApiKey ? "ready" : "needs config"} | Provider: {activeProvider}
+            AI Engine: {isGenerating ? "generating" : hasApiKey ? "ready" : "needs config"} | 
+            {hasApiKey ? `Provider: ${activeProvider}` : "Configure API key in Settings"}
           </div>
         </div>
       </footer>

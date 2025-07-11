@@ -45,6 +45,42 @@ CyberPromptBuilder seamlessly integrates with multiple AI service providers:
 
 ## Getting Started
 
+### Quick Start with Free AI Providers
+
+1. **Get a Free Gemini API Key** (Recommended for beginners)
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Sign in with your Google account
+   - Create a new API key (free tier includes generous limits)
+   - Copy the API key
+
+2. **Configure the Application**
+   - Open the application
+   - Go to Settings → API Keys
+   - Paste your Gemini API key
+   - Start chatting with AI!
+
+3. **Alternative Free Options**
+   - **OpenAI**: $5 free credit for new accounts at [OpenAI Platform](https://platform.openai.com/api-keys)
+   - **Anthropic Claude**: Free tier available at [Anthropic Console](https://console.anthropic.com/)
+
+### Using the Chat Interface
+
+```typescript
+// The chat interface automatically handles:
+// - Provider selection (Gemini, OpenAI, Claude)
+// - API key management
+// - Code extraction from responses
+// - Error handling
+
+// Example prompts to try:
+"Create a React component for a todo list"
+"Explain how async/await works in JavaScript"
+"Write a Python function to sort a list"
+"Help me debug this CSS flexbox layout"
+```
+
+### Advanced Usage with Prompt Builder
+
 ```typescript
 import { promptBuilderService } from './services/prompt-builder';
 

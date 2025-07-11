@@ -1,10 +1,9 @@
 /**
  * File System Service Implementation
  * Provides secure file operations for the application
+ * Note: This is a browser-compatible mock implementation
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
 import { FileSystemService, FileInfo, FileSearchOptions, FileWriteOptions, FileReadOptions, FileSearchResult } from '../../core/interfaces/file-system';
 import { Logger } from '../logging/logger';
 
@@ -17,11 +16,12 @@ const logger = new Logger('FileSystemService');
 export class FileSystemServiceImpl implements FileSystemService {
   private projectRoot: string;
   private initialized: boolean = false;
+  private mockFiles: Map<string, { content: string; lastModified: Date }> = new Map();
 
   constructor(projectRoot?: string) {
-    // Default to current working directory if not specified
-    this.projectRoot = projectRoot || process.cwd();
-    logger.info(`File system service created with root: ${this.projectRoot}`);
+    // Default to workspace directory for browser environment
+    this.projectRoot = projectRoot || '/workspace';
+    logger.info(`File system service created with root: ${this.projectRoot} (browser mode)`);
   }
 
   /**
@@ -33,14 +33,14 @@ export class FileSystemServiceImpl implements FileSystemService {
     }
 
     try {
-      // Verify the project root exists
-      const rootExists = await this.exists(this.projectRoot);
-      if (!rootExists) {
-        throw new Error(`Project root directory does not exist: ${this.projectRoot}`);
-      }
-
+      // Initialize with some mock files for demonstration
+      this.mockFiles.set('/workspace/README.md', {
+        content: '# Cyber Prompt Builder\n\nA modular AI prompt building system.',
+        lastModified: new Date()
+      });
+      
       this.initialized = true;
-      logger.info('File system service initialized successfully');
+      logger.info('File system service initialized successfully (browser mode)');
     } catch (error) {
       logger.error('Failed to initialize file system service', error);
       throw error;

@@ -1,263 +1,238 @@
 /**
- * User Preferences/Style Guide Layer Implementation
- * Represents user preferences for AI responses, styling, and behavior
+ * User Preferences Layer
+ * Handles user preferences for response tone, format, and behavior
  */
 
-import { BasePromptLayer, LayerPriority, PromptLayer, PromptLayerFactory } from '../interfaces/prompt-layer';
+import { PromptLayer, LayerPriority } from '../interfaces/prompt-layer';
 
 /**
- * Tone preferences for AI responses
+ * Response tone options
  */
 export enum ResponseTone {
-  FORMAL = 'formal',
-  CASUAL = 'casual',
-  TECHNICAL = 'technical',
+  PROFESSIONAL = 'professional',
   FRIENDLY = 'friendly',
-  CONCISE = 'concise',
-  DETAILED = 'detailed'
+  TECHNICAL = 'technical',
+  CASUAL = 'casual',
+  FORMAL = 'formal',
+  ANALYTICAL = 'analytical',
+  METHODICAL = 'methodical'
 }
 
 /**
- * Format preferences for AI responses
+ * Response format options
  */
 export enum ResponseFormat {
   DEFAULT = 'default',
-  BULLET_POINTS = 'bullet_points',
-  NUMBERED_LIST = 'numbered_list',
-  MARKDOWN = 'markdown',
+  STRUCTURED = 'structured',
+  CONVERSATIONAL = 'conversational',
+  STEP_BY_STEP = 'step_by_step',
   CODE_FOCUSED = 'code_focused',
-  CONVERSATIONAL = 'conversational'
+  BULLET_POINTS = 'bullet_points'
 }
 
 /**
- * User preference categories
+ * User preferences configuration
  */
 export interface UserPreferences {
-  /**
-   * Preferred tone for responses
-   */
-  tone?: ResponseTone;
-  
-  /**
-   * Preferred format for responses
-   */
-  format?: ResponseFormat;
-  
-  /**
-   * Maximum response length preference
-   */
-  maxResponseLength?: number;
-  
-  /**
-   * Whether to include explanations
-   */
-  includeExplanations?: boolean;
-  
-  /**
-   * Whether to include examples
-   */
-  includeExamples?: boolean;
-  
-  /**
-   * Custom instructions
-   */
+  tone: ResponseTone;
+  format: ResponseFormat;
+  includeExplanations: boolean;
+  includeExamples: boolean;
   customInstructions?: string;
-  
-  /**
-   * Custom styles
-   */
-  styles?: Record<string, string>;
-  
-  /**
-   * Additional preferences
-   */
-  [key: string]: unknown;
 }
 
 /**
- * User preferences layer - configures AI behavior and response style
+ * User Preferences Layer implementation
  */
-export class UserPreferencesLayer extends BasePromptLayer {
-  /**
-   * The user's preferences
-   */
+export class UserPreferencesLayer extends import('../interfaces/prompt-layer').BasePromptLayer {
   private preferences: UserPreferences;
-  
-  constructor(id: string, content: string = '', preferences: UserPreferences = {}, priority: number = LayerPriority.MEDIUM) {
-    super(id, 'preferences', content, priority);
+
+  constructor(id: string, preferences: UserPreferences) {
+    super(id, 'user_preferences', '', import('../interfaces/prompt-layer').LayerPriority.MEDIUM);
     this.preferences = { ...preferences };
   }
   
   /**
    * Create a clone of this layer
    */
-  clone(): PromptLayer {
-    const clone = new UserPreferencesLayer(this.id, this.content, { ...this.preferences }, this.priority);
+  clone(): import('../interfaces/prompt-layer').PromptLayer {
+    const clone = new UserPreferencesLayer(this.id, this.preferences);
     clone.enabled = this.enabled;
+    clone.priority = this.priority;
     return clone;
   }
-  
+
   /**
-   * Get the content with formatted preferences
+   * Get the layer content as a formatted string
    */
-  override getContent(): string {
-    // Start with any custom content
-    let result = this.content ? `${this.content}\n\n` : '';
-    
-    // Add preferences section
-    result += 'USER PREFERENCES:\n\n';
-    
-    // Add tone preference if set
-    if (this.preferences.tone) {
-      result += `TONE: Use a ${this.preferences.tone} tone in your responses.\n`;
-    }
-    
-    // Add format preference if set
-    if (this.preferences.format) {
-      result += `FORMAT: Structure your responses using ${this.formatInstructions(this.preferences.format)}.\n`;
-    }
-    
-    // Add length preference if set
-    if (this.preferences.maxResponseLength) {
-      result += `LENGTH: Keep responses under approximately ${this.preferences.maxResponseLength} words.\n`;
-    }
-    
+  getContent(): string {
+    const parts: string[] = [];
+
+    // Add tone instruction
+    parts.push(this.getToneInstruction());
+
+    // Add format instruction
+    parts.push(this.getFormatInstruction());
+
     // Add explanation preference
-    if (this.preferences.includeExplanations !== undefined) {
-      result += `EXPLANATIONS: ${this.preferences.includeExplanations ? 'Include' : 'Avoid'} detailed explanations.\n`;
+    if (this.preferences.includeExplanations) {
+      parts.push('Always provide clear explanations for your reasoning and decisions.');
     }
-    
+
     // Add examples preference
-    if (this.preferences.includeExamples !== undefined) {
-      result += `EXAMPLES: ${this.preferences.includeExamples ? 'Include' : 'Avoid'} examples in your responses.\n`;
+    if (this.preferences.includeExamples) {
+      parts.push('Include relevant examples to illustrate your points when appropriate.');
     }
-    
-    // Add custom instructions if provided
+
+    // Add custom instructions
     if (this.preferences.customInstructions) {
-      result += `\nCUSTOM INSTRUCTIONS:\n${this.preferences.customInstructions}\n`;
+      parts.push(`Additional instructions: ${this.preferences.customInstructions}`);
     }
-    
-    // Add style preferences if provided
-    if (this.preferences.styles && Object.keys(this.preferences.styles).length > 0) {
-      result += '\nSTYLE PREFERENCES:\n';
-      for (const [key, value] of Object.entries(this.preferences.styles)) {
-        result += `- ${key}: ${value}\n`;
-      }
-    }
-    
-    // Add other custom preferences
-    const otherPrefs = Object.entries(this.preferences)
-      .filter(([key]) => !['tone', 'format', 'maxResponseLength', 'includeExplanations', 
-                          'includeExamples', 'customInstructions', 'styles'].includes(key));
-    
-    if (otherPrefs.length > 0) {
-      result += '\nADDITIONAL PREFERENCES:\n';
-      for (const [key, value] of otherPrefs) {
-        result += `- ${key}: ${value}\n`;
-      }
-    }
-    
-    return result;
+
+    return parts.join('\n');
   }
-  
+
   /**
-   * Get format instructions for a response format
-   * @param format The format to get instructions for
-   * @returns Formatted instructions
+   * Set the layer content (expects JSON string of preferences)
    */
-  private formatInstructions(format: ResponseFormat): string {
-    switch (format) {
-      case ResponseFormat.BULLET_POINTS:
-        return 'bullet points';
-      case ResponseFormat.NUMBERED_LIST:
-        return 'numbered lists';
-      case ResponseFormat.MARKDOWN:
-        return 'markdown formatting';
-      case ResponseFormat.CODE_FOCUSED:
-        return 'code blocks and technical explanations';
-      case ResponseFormat.CONVERSATIONAL:
-        return 'a conversational style';
-      case ResponseFormat.DEFAULT:
-      default:
-        return 'a clear, well-structured format';
+  override setContent(content: string): void {
+    try {
+      const parsed = JSON.parse(content);
+      this.updatePreferences(parsed);
+    } catch (error) {
+      console.warn('Failed to parse user preferences content:', error);
     }
   }
-  
+
   /**
-   * Set a preference value
-   * @param key The preference key
-   * @param value The preference value
+   * Update user preferences
    */
-  setPreference<K extends keyof UserPreferences>(key: K, value: UserPreferences[K]): void {
-    this.preferences[key] = value;
+  updatePreferences(newPreferences: Partial<UserPreferences>): void {
+    this.preferences = { ...this.preferences, ...newPreferences };
   }
   
   /**
-   * Get a preference value
-   * @param key The preference key
-   * @returns The preference value
+   * Set user preferences (alias for updatePreferences)
    */
-  getPreference<K extends keyof UserPreferences>(key: K): UserPreferences[K] | undefined {
-    return this.preferences[key];
+  setPreferences(newPreferences: Partial<UserPreferences>): void {
+    this.updatePreferences(newPreferences);
   }
-  
+
   /**
-   * Set multiple preferences at once
-   * @param preferences The preferences to set
+   * Get current preferences
    */
-  setPreferences(preferences: Partial<UserPreferences>): void {
-    this.preferences = {
-      ...this.preferences,
-      ...preferences
-    };
-  }
-  
-  /**
-   * Get all preferences
-   * @returns All preferences
-   */
-  getAllPreferences(): UserPreferences {
+  getPreferences(): UserPreferences {
     return { ...this.preferences };
   }
-  
+
   /**
-   * Clear all preferences
+   * Get tone instruction based on selected tone
    */
-  clearPreferences(): void {
-    this.preferences = {};
+  private getToneInstruction(): string {
+    switch (this.preferences.tone) {
+      case ResponseTone.PROFESSIONAL:
+        return 'Maintain a professional and business-appropriate tone in all responses.';
+      case ResponseTone.FRIENDLY:
+        return 'Use a friendly, approachable, and conversational tone.';
+      case ResponseTone.TECHNICAL:
+        return 'Use precise technical language appropriate for developers and technical professionals.';
+      case ResponseTone.CASUAL:
+        return 'Keep the tone casual and relaxed, as if talking to a colleague.';
+      case ResponseTone.FORMAL:
+        return 'Maintain a formal and respectful tone throughout the interaction.';
+      case ResponseTone.ANALYTICAL:
+        return 'Approach responses with an analytical mindset, focusing on logic and systematic thinking.';
+      case ResponseTone.METHODICAL:
+        return 'Be methodical and systematic in your approach, breaking down complex topics step by step.';
+      default:
+        return 'Maintain an appropriate and helpful tone.';
+    }
+  }
+
+  /**
+   * Get format instruction based on selected format
+   */
+  private getFormatInstruction(): string {
+    switch (this.preferences.format) {
+      case ResponseFormat.STRUCTURED:
+        return 'Structure your responses with clear headings, sections, and organized information.';
+      case ResponseFormat.CONVERSATIONAL:
+        return 'Format responses in a natural, conversational style.';
+      case ResponseFormat.STEP_BY_STEP:
+        return 'Break down complex processes into clear, numbered steps.';
+      case ResponseFormat.CODE_FOCUSED:
+        return 'Focus on code examples and technical implementation details.';
+      case ResponseFormat.BULLET_POINTS:
+        return 'Use bullet points and lists to organize information clearly.';
+      case ResponseFormat.DEFAULT:
+      default:
+        return 'Format responses in a clear and readable manner.';
+    }
   }
 }
 
 /**
  * Factory for creating user preferences layers
  */
-export class UserPreferencesLayerFactory implements PromptLayerFactory {
-  createLayer(id: string, content: string, priority?: number): PromptLayer {
-    return new UserPreferencesLayer(id, content, {}, priority);
+export class UserPreferencesLayerFactory implements import('../interfaces/prompt-layer').PromptLayerFactory {
+  createLayer(id: string, content: string, priority?: number): import('../interfaces/prompt-layer').PromptLayer {
+    // Parse content as JSON if it's a string, otherwise use defaults
+    let preferences: UserPreferences;
+    try {
+      preferences = content ? JSON.parse(content) : DEFAULT_USER_PREFERENCES;
+    } catch {
+      preferences = DEFAULT_USER_PREFERENCES;
+    }
+    return new UserPreferencesLayer(id, preferences);
   }
 }
 
-// Common user preference presets
+/**
+ * Create a new user preferences layer
+ */
+export function createUserPreferencesLayer(
+  id: string,
+  preferences: UserPreferences
+): UserPreferencesLayer {
+  return new UserPreferencesLayer(id, preferences);
+}
+
+/**
+ * Default user preferences
+ */
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  tone: ResponseTone.TECHNICAL,
+  format: ResponseFormat.DEFAULT,
+  includeExplanations: true,
+  includeExamples: false
+};
+
+/**
+ * Predefined user preference presets
+ */
 export const USER_PREFERENCE_PRESETS = {
   DEVELOPER: {
     tone: ResponseTone.TECHNICAL,
     format: ResponseFormat.CODE_FOCUSED,
     includeExplanations: true,
-    includeExamples: true,
-    customInstructions: 'Focus on clean, efficient, and maintainable code. Include code comments.'
-  },
-  EXECUTIVE: {
-    tone: ResponseTone.FORMAL,
-    format: ResponseFormat.BULLET_POINTS,
-    maxResponseLength: 300,
-    includeExplanations: false,
-    customInstructions: 'Focus on business impact, costs, and strategic implications.'
+    includeExamples: true
   },
   BEGINNER: {
     tone: ResponseTone.FRIENDLY,
-    format: ResponseFormat.CONVERSATIONAL,
+    format: ResponseFormat.STEP_BY_STEP,
     includeExplanations: true,
-    includeExamples: true,
-    customInstructions: 'Avoid jargon. Explain concepts in simple terms.'
+    includeExamples: true
+  },
+  PROFESSIONAL: {
+    tone: ResponseTone.PROFESSIONAL,
+    format: ResponseFormat.STRUCTURED,
+    includeExplanations: true,
+    includeExamples: false
+  },
+  CASUAL: {
+    tone: ResponseTone.CASUAL,
+    format: ResponseFormat.CONVERSATIONAL,
+    includeExplanations: false,
+    includeExamples: true
   }
 };

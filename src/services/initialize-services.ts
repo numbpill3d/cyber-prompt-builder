@@ -10,6 +10,7 @@ import { modeService } from './mode/mode-service';
 import { initializeModeIntegration } from './prompt-builder/mode-integration';
 import { fileSystemService } from './file-system/file-system-service';
 import { terminalService } from './terminal/terminal-service';
+import { environmentValidator } from './validation/environment-validator';
 import { registerService } from '../core/services/service-locator';
 
 // Initialize logger
@@ -22,6 +23,9 @@ const logger = new Logger('ServiceInitializer');
 export const initializeServices = async (): Promise<void> => {
   try {
     logger.info('Initializing services');
+
+    // Validate environment first
+    await validateEnvironment();
 
     // Initialize configuration service first
     await initializeConfig();
@@ -189,8 +193,43 @@ const initializeFileSystemAndTerminal = async (): Promise<void> => {
   }
 };
 
+/**
+ * Validate environment
+ */
+const validateEnvironment = async (): Promise<void> => {
+  try {
+    logger.info('Validating environment');
+    
+    const result = environmentValidator.validateEnvironment();
+    
+    if (result.errors.length > 0) {
+      logger.error('Environment validation failed', { errors: result.errors });
+      result.errors.forEach(error => console.error('❌', error));
+    }
+    
+    if (result.warnings.length > 0) {
+      logger.warn('Environment validation warnings', { warnings: result.warnings });
+      result.warnings.forEach(warning => console.warn('⚠️', warning));
+    }
+    
+    if (result.recommendations.length > 0) {
+      result.recommendations.forEach(rec => console.info('💡', rec));
+    }
+    
+    if (!result.isValid) {
+      throw new Error('Environment validation failed. Check the errors above.');
+    }
+    
+    logger.info('Environment validation completed');
+  } catch (error) {
+    logger.error('Failed to validate environment', { error });
+    throw error;
+  }
+};
+
 // Export individual initialization functions for testing
 export {
+  validateEnvironment,
   initializeConfig,
   initializeLogging,
   initializeErrorHandling,

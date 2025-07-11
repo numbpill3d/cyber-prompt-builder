@@ -121,6 +121,13 @@ export default function Settings() {
     if (memoryService && ttsService && evolutionService) {
       loadSettings();
     }
+    // Load API keys from localStorage
+    setApiKeys({
+      openai: localStorage.getItem('openai_api_key') || '',
+      anthropic: localStorage.getItem('claude_api_key') || '',
+      google: localStorage.getItem('gemini_api_key') || '',
+      huggingface: localStorage.getItem('huggingface_api_key') || '',
+    });
   }, [memoryService, ttsService, evolutionService]);
   
   // Load all settings
@@ -257,41 +264,48 @@ export default function Settings() {
                         type="password"
                         placeholder="sk-..."
                         value={apiKeys.openai}
-                        onChange={(e) => setApiKeys({...apiKeys, openai: e.target.value})}
+                        onChange={(e) => {
+                          setApiKeys({...apiKeys, openai: e.target.value});
+                          localStorage.setItem('openai_api_key', e.target.value);
+                        }}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" className="text-blue-500 hover:underline">OpenAI Platform</a>
+                      </p>
                     </div>
                     
                     <div className="grid gap-2">
-                      <Label htmlFor="anthropic-key">Anthropic API Key</Label>
+                      <Label htmlFor="gemini-key">Google Gemini API Key (Free Tier Available)</Label>
+                      <Input
+                        id="gemini-key"
+                        type="password"
+                        placeholder="AIza..."
+                        value={apiKeys.google}
+                        onChange={(e) => {
+                          setApiKeys({...apiKeys, google: e.target.value});
+                          localStorage.setItem('gemini_api_key', e.target.value);
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" className="text-blue-500 hover:underline">Google AI Studio</a>
+                      </p>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="anthropic-key">Anthropic Claude API Key</Label>
                       <Input
                         id="anthropic-key"
                         type="password"
                         placeholder="sk-ant-..."
                         value={apiKeys.anthropic}
-                        onChange={(e) => setApiKeys({...apiKeys, anthropic: e.target.value})}
+                        onChange={(e) => {
+                          setApiKeys({...apiKeys, anthropic: e.target.value});
+                          localStorage.setItem('claude_api_key', e.target.value);
+                        }}
                       />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="google-key">Google AI API Key</Label>
-                      <Input
-                        id="google-key"
-                        type="password"
-                        placeholder="AIza..."
-                        value={apiKeys.google}
-                        onChange={(e) => setApiKeys({...apiKeys, google: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="huggingface-key">HuggingFace API Key</Label>
-                      <Input
-                        id="huggingface-key"
-                        type="password"
-                        placeholder="hf_..."
-                        value={apiKeys.huggingface}
-                        onChange={(e) => setApiKeys({...apiKeys, huggingface: e.target.value})}
-                      />
+                      <p className="text-xs text-muted-foreground">
+                        Get your API key from <a href="https://console.anthropic.com/" target="_blank" className="text-blue-500 hover:underline">Anthropic Console</a>
+                      </p>
                     </div>
                   </div>
                 </div>

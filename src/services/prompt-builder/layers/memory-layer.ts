@@ -13,7 +13,9 @@ export enum MemoryEntryType {
   DOCUMENT = 'document',
   CODE = 'code',
   FACT = 'fact',
-  USER_PREFERENCE = 'user_preference'
+  USER_PREFERENCE = 'user_preference',
+  CONTEXT = 'context',
+  TEXT = 'text'
 }
 
 /**
