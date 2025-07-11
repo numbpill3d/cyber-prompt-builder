@@ -45,6 +45,16 @@ CyberPromptBuilder seamlessly integrates with multiple AI service providers:
 
 ## Getting Started
 
+### Production Deployment
+
+The application is production-ready with the following features:
+- ✅ Comprehensive error handling and logging
+- ✅ Environment validation and security checks
+- ✅ Performance optimizations and code splitting
+- ✅ Security headers and input sanitization
+- ✅ Browser compatibility checks
+- ✅ Graceful fallbacks for missing dependencies
+
 ### Quick Start with Free AI Providers
 
 1. **Get a Free Gemini API Key** (Recommended for beginners)
@@ -54,14 +64,47 @@ CyberPromptBuilder seamlessly integrates with multiple AI service providers:
    - Copy the API key
 
 2. **Configure the Application**
-   - Open the application
-   - Go to Settings → API Keys
-   - Paste your Gemini API key
-   - Start chatting with AI!
+   - Set environment variable: `REACT_APP_PROVIDERS_GEMINI_API_KEY=your_key_here`
+   - Or configure through the Settings UI
+   - Start using the AI features!
 
 3. **Alternative Free Options**
    - **OpenAI**: $5 free credit for new accounts at [OpenAI Platform](https://platform.openai.com/api-keys)
    - **Anthropic Claude**: Free tier available at [Anthropic Console](https://console.anthropic.com/)
+
+### Production Deployment
+
+#### Environment Variables
+```bash
+# Required
+NODE_ENV=production
+REACT_APP_APP_ENVIRONMENT=production
+
+# At least one AI provider API key
+REACT_APP_PROVIDERS_GEMINI_API_KEY=your_gemini_key
+# OR
+REACT_APP_PROVIDERS_OPENAI_API_KEY=your_openai_key
+# OR
+REACT_APP_PROVIDERS_CLAUDE_API_KEY=your_claude_key
+
+# Optional configuration
+REACT_APP_PROVIDERS_DEFAULT_PROVIDER=gemini
+REACT_APP_AGENT_MAX_ITERATIONS=3
+REACT_APP_PROMPT_BUILDER_MAX_TOKENS=4096
+```
+
+#### Build and Deploy
+```bash
+npm install
+npm run build
+npm run build:check  # Validates build output
+npm start           # Starts production server
+```
+
+#### Health Checks
+- Health endpoint: `/health`
+- Config endpoint: `/api/config`
+- Environment validation runs on startup
 
 ### Using the Chat Interface
 

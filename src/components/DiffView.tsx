@@ -60,14 +60,14 @@ export const DiffView: React.FC<DiffViewProps> = ({
   // Render the diff view with added/removed highlighting
   const renderDiff = () => {
     return (
-      <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-gray-900 rounded-md">
+      <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-cyber-black rounded-md cyberborder">
         {changes.map((change, index) => {
           // Determine the styling based on whether text was added, removed, or unchanged
-          let className = "text-gray-300";
+          let className = "text-cyber-ice-blue";
           let prefix = "  ";
           
           if (change.added) {
-            className = "text-green-400 bg-green-900/30";
+            className = "text-cyber-bright-blue bg-cyber-bright-blue/20";
             prefix = "+ ";
           } else if (change.removed) {
             className = "text-red-400 bg-red-900/30";
@@ -81,7 +81,7 @@ export const DiffView: React.FC<DiffViewProps> = ({
             
             return (
               <div key={`${index}-${lineIndex}`} className={className}>
-                <span className="select-none text-gray-500 w-8 inline-block">{prefix}</span>
+                <span className="select-none text-cyber-sky-blue w-8 inline-block">{prefix}</span>
                 {line}
               </div>
             );
@@ -99,10 +99,10 @@ export const DiffView: React.FC<DiffViewProps> = ({
     return (
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <div className="mb-2 font-semibold text-gray-400">Original</div>
-          <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-gray-900 rounded-md">
+          <div className="mb-2 font-semibold font-orbitron text-cyber-bright-blue">Original</div>
+          <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre bg-cyber-black rounded-md cyberborder">
             {original.split('\n').map((line, index) => (
-              <div key={`original-${index}`} className="text-gray-300">
+              <div key={`original-${index}`} className="text-cyber-ice-blue">
                 {line}
               </div>
             ))}

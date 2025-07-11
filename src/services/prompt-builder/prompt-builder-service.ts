@@ -65,13 +65,10 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
    */
   addMemoryEntry(layerId: string, type: MemoryEntryType, content: string, source?: string): boolean {
     const layer = builder.getLayer(layerId);
-    if (layer && layer instanceof MemoryLayer) {
-      layer.addEntry({
-        type,
-        content,
-        source,
-        timestamp: new Date()
-      });
+    if (layer) {
+      const currentContent = layer.getContent();
+      const newEntry = `${currentContent}\n${content}`;
+      layer.setContent(newEntry);
       return true;
     }
     return false;
@@ -89,9 +86,8 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
     customInstructions?: string;
   }): boolean {
     const layer = builder.getLayer(layerId);
-    if (layer && 'setPreferences' in layer) {
-      const typedPrefsLayer = layer as import('./layers/user-preferences-layer').UserPreferencesLayer;
-      typedPrefsLayer.setPreferences(preferences);
+    if (layer) {
+      layer.setContent(JSON.stringify(preferences));
       return true;
     }
     return false;
@@ -102,9 +98,10 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
    */
   addTaskExample(layerId: string, example: string): boolean {
     const layer = builder.getLayer(layerId);
-    if (layer && 'addExample' in layer) {
-      const typedTaskLayer = layer as import('./layers/task-instruction-layer').TaskInstructionLayer;
-      typedTaskLayer.addExample(example);
+    if (layer) {
+      const currentContent = layer.getContent();
+      const newContent = `${currentContent}\n\nExample: ${example}`;
+      layer.setContent(newContent);
       return true;
     }
     return false;
@@ -140,18 +137,34 @@ export class PromptBuilderServiceImpl implements PromptBuilderService {
       source?: string;
     }>;
   }): ComposedPrompt {
-    // Convert string types to the correct enum types
-    const typedOptions = {
-      systemPrompt: options.systemPrompt,
-      systemPreset: options.systemPreset as keyof typeof DEFAULT_SYSTEM_PROMPTS,
-      taskInstruction: options.taskInstruction,
-      taskTemplate: options.taskTemplate as keyof typeof TASK_INSTRUCTION_TEMPLATES,
-      userPreferences: options.userPreferences,
-      userPreset: options.userPreset as keyof typeof USER_PREFERENCE_PRESETS,
-      memoryEntries: options.memoryEntries
-    };
+    // Clear existing layers
+    this.clearLayers();
     
-    return buildCompletePrompt(typedOptions);
+    // Create system prompt
+    if (options.systemPrompt) {
+      this.createSystemPrompt(options.systemPrompt);
+    }
+    
+    // Create task instruction
+    if (options.taskInstruction) {
+      this.createTaskInstruction(options.taskInstruction);
+    }
+    
+    // Create memory layer with entries
+    if (options.memoryEntries && options.memoryEntries.length > 0) {
+      const memoryId = this.createMemoryLayer();
+      options.memoryEntries.forEach(entry => {
+        this.addMemoryEntry(memoryId, entry.type, entry.content, entry.source);
+      });
+    }
+    
+    // Create user preferences
+    if (options.userPreferences) {
+      const prefsId = this.createUserPreferences();
+      this.setUserPreferences(prefsId, options.userPreferences as any);
+    }
+    
+    return this.compose();
   }
   
   /**

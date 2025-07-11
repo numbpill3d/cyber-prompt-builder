@@ -1,99 +1,159 @@
-# Deployment Guide for Cyber Prompt Builder
+# Deployment Guide
 
-This document provides instructions for deploying the Cyber Prompt Builder application on Render.
+This guide covers deploying the Cyber Prompt Builder to various cloud platforms.
 
-## Prerequisites
+## Quick Deploy Options
 
-Before deploying, ensure you have:
+### 1. Render (Recommended)
 
-1. A [Render](https://render.com) account
-2. Access to the GitHub repository containing the application code
-3. API keys for the AI providers you plan to use (OpenAI, Claude, Gemini)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
-## Deployment Steps
+**Steps:**
+1. Fork this repository
+2. Connect your GitHub account to Render
+3. Create a new Web Service
+4. Connect your forked repository
+5. Use these settings:
+   - **Build Command**: `npm ci && npm run build`
+   - **Start Command**: `npm start`
+   - **Environment**: Node
+   - **Plan**: Free (or paid for better performance)
 
-### 1. Connect Your Repository to Render
+**Environment Variables:**
+- `NODE_ENV`: `production`
+- `PORT`: `10000` (Render default)
+- `VITE_OPENAI_API_KEY`: Your OpenAI API key
+- `VITE_CLAUDE_API_KEY`: Your Claude API key  
+- `VITE_GEMINI_API_KEY`: Your Gemini API key
 
-1. Log in to your Render account
-2. Click on "New" and select "Web Service"
-3. Connect your GitHub repository
-4. Select the repository containing the Cyber Prompt Builder application
+### 2. Railway
 
-### 2. Configure the Web Service
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/deploy)
 
-The repository includes a `render.yaml` file that will automatically configure most settings, but verify the following:
+**Steps:**
+1. Click the Railway deploy button
+2. Connect your GitHub account
+3. Select this repository
+4. Railway will auto-detect the configuration from `railway.json`
+5. Add environment variables in the Railway dashboard
 
-- **Name**: cyber-prompt-builder (or your preferred name)
-- **Runtime**: Node
-- **Build Command**: `npm install && npm run build`
-- **Start Command**: `npm start`
-- **Health Check Path**: `/health`
+### 3. Vercel
 
-### 3. Set Environment Variables
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-The following environment variables need to be set in the Render dashboard:
+**Steps:**
+1. Import your repository to Vercel
+2. Vercel will auto-detect it's a Vite project
+3. Add environment variables
+4. Deploy
 
-#### Required API Keys (Secret)
-- `REACT_APP_PROVIDERS_OPENAI_API_KEY`: Your OpenAI API key
-- `REACT_APP_PROVIDERS_CLAUDE_API_KEY`: Your Claude API key
-- `REACT_APP_PROVIDERS_GEMINI_API_KEY`: Your Gemini API key
+### 4. Netlify
 
-#### Optional Configuration
-The following variables are pre-configured in the `render.yaml` file but can be overridden in the dashboard:
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
 
-- `REACT_APP_APP_ENVIRONMENT`: Set to "production" by default
-- `REACT_APP_PROVIDERS_DEFAULT_PROVIDER`: Set to "openai" by default
-- `REACT_APP_AGENT_MAX_ITERATIONS`: Set to "3" by default
-- `REACT_APP_AGENT_ENABLE_TASK_BREAKDOWN`: Set to "true" by default
-- `REACT_APP_AGENT_ENABLE_ITERATION`: Set to "true" by default
-- `REACT_APP_AGENT_ENABLE_CONTEXT_MEMORY`: Set to "true" by default
-- `REACT_APP_PROMPT_BUILDER_MAX_TOKENS`: Set to "4096" by default
-- `REACT_APP_PROMPT_BUILDER_TEMPERATURE`: Set to "0.7" by default
-- `REACT_APP_TTS_ENABLED`: Set to "false" by default
+**Steps:**
+1. Connect your repository to Netlify
+2. Build settings:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+3. Add environment variables
+4. Deploy
 
-### 4. Deploy the Application
+## Manual Deployment
 
-1. Click "Create Web Service"
-2. Render will automatically deploy your application using the configuration in `render.yaml`
-3. Once the deployment is complete, you can access your application at the provided URL
+### Prerequisites
+- Node.js 18+ 
+- npm 8+
+
+### Build for Production
+```bash
+npm ci
+npm run build
+npm start
+```
+
+### Docker Deployment
+```bash
+# Build image
+docker build -t cyber-prompt-builder .
+
+# Run container
+docker run -p 3000:3000 \
+  -e VITE_OPENAI_API_KEY=your_key \
+  -e VITE_CLAUDE_API_KEY=your_key \
+  -e VITE_GEMINI_API_KEY=your_key \
+  cyber-prompt-builder
+```
+
+## Environment Variables
+
+### Required
+- `VITE_OPENAI_API_KEY` - OpenAI API key
+- `VITE_CLAUDE_API_KEY` - Anthropic Claude API key
+- `VITE_GEMINI_API_KEY` - Google Gemini API key
+
+### Optional
+- `NODE_ENV` - Environment (production/development)
+- `PORT` - Server port (default: 3000)
+- `VITE_APP_NAME` - App name override
+- `VITE_APP_VERSION` - App version override
+
+## Platform-Specific Notes
+
+### Render
+- Uses `render.yaml` for configuration
+- Free tier has 750 hours/month
+- Automatic SSL certificates
+- Built-in monitoring
+
+### Railway
+- Uses `railway.json` for configuration  
+- $5/month starter plan
+- Automatic deployments from Git
+- Built-in databases available
+
+### Vercel
+- Optimized for frontend applications
+- Generous free tier
+- Edge functions support
+- Automatic preview deployments
+
+### Netlify
+- Great for static sites with serverless functions
+- Free tier includes 100GB bandwidth
+- Form handling and identity management
+- Split testing capabilities
 
 ## Troubleshooting
 
-### Common Issues
+### Build Failures
+- Ensure Node.js version is 18+
+- Check all dependencies are installed
+- Verify environment variables are set
 
-1. **Build Failures**: Check the build logs for any errors. Common issues include:
-   - Missing dependencies
-   - TypeScript compilation errors
-   - Environment variable issues
+### Runtime Errors
+- Check server logs for specific errors
+- Verify API keys are valid
+- Ensure all required environment variables are set
 
-2. **Runtime Errors**: Check the application logs for any runtime errors.
+### Performance Issues
+- Consider upgrading to paid plans for better resources
+- Enable gzip compression
+- Optimize bundle size with tree shaking
 
-3. **API Key Issues**: Ensure all required API keys are correctly set in the environment variables.
+## Health Checks
 
-### Health Check Failures
+All platforms can use the `/health` endpoint:
+```
+GET /health
+```
 
-If the health check fails, verify:
-1. The server is running correctly
-2. The `/health` endpoint is accessible
-3. The server is listening on the correct port (should use `process.env.PORT`)
-
-## Updating the Deployment
-
-To update your deployment:
-1. Push changes to your GitHub repository
-2. Render will automatically detect the changes and redeploy the application
-
-## Custom Domains
-
-To use a custom domain:
-1. Go to your web service in the Render dashboard
-2. Click on "Settings"
-3. Scroll down to "Custom Domains"
-4. Follow the instructions to add and verify your domain
-
-## Support
-
-If you encounter any issues with the deployment, please:
-1. Check the Render documentation: https://render.com/docs
-2. Review the application logs in the Render dashboard
-3. Contact the development team for assistance
+Returns:
+```json
+{
+  "status": "OK",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 12345,
+  "version": "1.0.0"
+}
+```

@@ -1,148 +1,180 @@
 /**
- * Interfaces for prompt composition and layer manipulation
+ * Prompt Composition Interfaces
+ * Defines how prompt layers are composed together
  */
 
 import { PromptLayer } from './prompt-layer';
 
 /**
- * Interface for a composed prompt
+ * Result of composing prompt layers
  */
 export interface ComposedPrompt {
   /**
-   * The fully composed prompt text
+   * The final composed prompt text
    */
   text: string;
   
   /**
-   * The layers that were used in composition
+   * Metadata about the composition
    */
-  layers: PromptLayer[];
-  
-  /**
-   * Total token estimate for the composed prompt
-   */
-  tokenEstimate: number;
-  
-  /**
-   * Additional metadata about the composition
-   */
-  metadata: {
-    /**
-     * Timestamp when the prompt was composed
-     */
-    composedAt: Date;
-    
-    /**
-     * Time taken to compose in milliseconds
-     */
-    compositionTimeMs?: number;
-    
-    /**
-     * Any layers that were excluded from composition
-     */
-    excludedLayers?: PromptLayer[];
-    
-    /**
-     * Additional composition metadata
-     */
-    [key: string]: unknown;
-  };
+  metadata: Record<string, unknown>;
 }
 
 /**
- * Strategy for composing layers into a prompt
+ * Filter function for selecting layers during composition
+ */
+export type LayerFilter = (layer: PromptLayer) => boolean;
+
+/**
+ * Composition strategy interface
  */
 export interface CompositionStrategy {
   /**
-   * Name of the strategy
+   * Name of the composition strategy
    */
   name: string;
   
   /**
-   * Compose multiple layers into a single prompt
-   * @param layers The layers to compose
-   * @returns The composed prompt
+   * Compose layers using this strategy
+   * @param layers Array of layers to compose
+   * @returns Composed prompt result
    */
   compose(layers: PromptLayer[]): ComposedPrompt;
 }
 
 /**
- * Format function for a layer
+ * Simple composition strategy that concatenates layers by priority
  */
-export type LayerFormatter = (layer: PromptLayer) => string;
+export class SimpleCompositionStrategy implements CompositionStrategy {
+  name = 'simple';
+  
+  compose(layers: PromptLayer[]): ComposedPrompt {
+    // Filter enabled layers
+    const enabledLayers = layers.filter(layer => layer.enabled);
+    
+    // Sort by priority (highest first)
+    const sortedLayers = enabledLayers.sort((a, b) => b.priority - a.priority);
+    
+    // Compose text
+    const sections: string[] = [];
+    sortedLayers.forEach(layer => {
+      const content = layer.getContent();
+      if (content && content.trim()) {
+        sections.push(content.trim());
+      }
+    });
+    
+    return {
+      text: sections.join('\n\n'),
+      metadata: {
+        strategy: this.name,
+        layerCount: sortedLayers.length,
+        layers: sortedLayers.map(layer => ({
+          id: layer.id,
+          type: layer.type,
+          priority: layer.priority
+        }))
+      }
+    };
+  }
+}
 
 /**
- * Token estimator function
+ * Structured composition strategy that organizes layers by type
  */
-export type TokenEstimator = (text: string) => number;
-
-/**
- * Configuration for a prompt composition
- */
-export interface CompositionConfig {
-  /**
-   * The composition strategy to use
-   */
-  strategy: CompositionStrategy;
+export class StructuredCompositionStrategy implements CompositionStrategy {
+  name = 'structured';
   
-  /**
-   * Optional custom formatters for specific layer types
-   */
-  formatters?: Map<string, LayerFormatter>;
-  
-  /**
-   * Function to estimate token count of text
-   */
-  tokenEstimator?: TokenEstimator;
-  
-  /**
-   * Maximum token limit for the composed prompt
-   */
-  maxTokens?: number;
-  
-  /**
-   * Should composition be done in a deterministic order
-   */
-  deterministicOrder?: boolean;
+  compose(layers: PromptLayer[]): ComposedPrompt {
+    // Filter enabled layers
+    const enabledLayers = layers.filter(layer => layer.enabled);
+    
+    // Group by type
+    const layersByType = new Map<string, PromptLayer[]>();
+    enabledLayers.forEach(layer => {
+      if (!layersByType.has(layer.type)) {
+        layersByType.set(layer.type, []);
+      }
+      layersByType.get(layer.type)!.push(layer);
+    });
+    
+    // Define type order
+    const typeOrder = ['system', 'task', 'memory', 'user_preferences'];
+    const sections: string[] = [];
+    
+    typeOrder.forEach(type => {
+      const typeLayers = layersByType.get(type);
+      if (typeLayers && typeLayers.length > 0) {
+        // Sort by priority within type
+        const sortedTypeLayers = typeLayers.sort((a, b) => b.priority - a.priority);
+        
+        sortedTypeLayers.forEach(layer => {
+          const content = layer.getContent();
+          if (content && content.trim()) {
+            sections.push(content.trim());
+          }
+        });
+      }
+    });
+    
+    // Add any remaining types not in the predefined order
+    layersByType.forEach((typeLayers, type) => {
+      if (!typeOrder.includes(type)) {
+        const sortedTypeLayers = typeLayers.sort((a, b) => b.priority - a.priority);
+        sortedTypeLayers.forEach(layer => {
+          const content = layer.getContent();
+          if (content && content.trim()) {
+            sections.push(content.trim());
+          }
+        });
+      }
+    });
+    
+    return {
+      text: sections.join('\n\n'),
+      metadata: {
+        strategy: this.name,
+        layerCount: enabledLayers.length,
+        typeGroups: Array.from(layersByType.keys()),
+        layers: enabledLayers.map(layer => ({
+          id: layer.id,
+          type: layer.type,
+          priority: layer.priority
+        }))
+      }
+    };
+  }
 }
 
 /**
- * Interface for filtering layers
+ * Composition options
  */
-export interface LayerFilter {
+export interface CompositionOptions {
   /**
-   * Test if a layer matches this filter
-   * @param layer The layer to test
-   * @returns True if the layer matches
+   * Strategy to use for composition
    */
-  matches(layer: PromptLayer): boolean;
+  strategy?: CompositionStrategy;
+  
+  /**
+   * Filter to apply to layers before composition
+   */
+  filter?: LayerFilter;
+  
+  /**
+   * Maximum length of the composed prompt
+   */
+  maxLength?: number;
+  
+  /**
+   * Whether to include metadata in the result
+   */
+  includeMetadata?: boolean;
 }
 
 /**
- * Simple implementation of a layer filter
+ * Default composition options
  */
-export class SimpleLayerFilter implements LayerFilter {
-  constructor(private predicate: (layer: PromptLayer) => boolean) {}
-  
-  matches(layer: PromptLayer): boolean {
-    return this.predicate(layer);
-  }
-  
-  /**
-   * Create a filter for layers of a specific type
-   * @param type The layer type to match
-   * @returns A filter for the specified type
-   */
-  static byType(type: string): LayerFilter {
-    return new SimpleLayerFilter(layer => layer.type === type);
-  }
-  
-  /**
-   * Create a filter for layers with a minimum priority
-   * @param minPriority The minimum priority to match
-   * @returns A filter for the specified priority threshold
-   */
-  static byMinPriority(minPriority: number): LayerFilter {
-    return new SimpleLayerFilter(layer => layer.priority >= minPriority);
-  }
-}
+export const DEFAULT_COMPOSITION_OPTIONS: CompositionOptions = {
+  strategy: new SimpleCompositionStrategy(),
+  includeMetadata: true
+};

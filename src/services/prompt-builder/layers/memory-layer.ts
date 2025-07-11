@@ -1,173 +1,123 @@
 /**
- * Memory/Context Recall Layer Implementation
- * Represents relevant context and history for the AI's responses
+ * Memory Layer
+ * Handles contextual memory and previous interactions
  */
 
-import { BasePromptLayer, LayerPriority, PromptLayer, PromptLayerFactory, MetadataPromptLayer, PromptLayerMetadata } from '../interfaces/prompt-layer';
+import { BasePromptLayer, LayerPriority } from '../interfaces/prompt-layer';
 
 /**
- * Types of memory entries
+ * Memory entry types
  */
 export enum MemoryEntryType {
   CONVERSATION = 'conversation',
-  DOCUMENT = 'document',
   CODE = 'code',
-  FACT = 'fact',
-  USER_PREFERENCE = 'user_preference',
   CONTEXT = 'context',
-  TEXT = 'text'
+  FEEDBACK = 'feedback',
+  ERROR = 'error',
+  SUCCESS = 'success'
 }
 
 /**
- * A single memory/context entry
+ * Memory entry interface
  */
 export interface MemoryEntry {
-  /**
-   * Type of memory
-   */
   type: MemoryEntryType;
-  
-  /**
-   * Content of the memory
-   */
   content: string;
-  
-  /**
-   * Optional timestamp for when this memory was created/observed
-   */
-  timestamp?: Date;
-  
-  /**
-   * Optional relevance score (higher = more relevant)
-   */
-  relevance?: number;
-  
-  /**
-   * Source of this memory (conversation, file, etc.)
-   */
   source?: string;
+  timestamp: Date;
 }
 
 /**
- * Memory context layer - provides relevant history and context
+ * Memory layer implementation
  */
-export class MemoryLayer extends BasePromptLayer implements MetadataPromptLayer {
-  /**
-   * Memory entries stored in this layer
-   */
+export class MemoryLayer extends BasePromptLayer {
   private entries: MemoryEntry[] = [];
-  
-  /**
-   * Layer metadata
-   */
-  metadata: PromptLayerMetadata = {
-    created: new Date(),
-    lastModified: new Date(),
-    source: 'system'
-  };
-  
-  constructor(id: string, content: string = '', priority: number = LayerPriority.MEDIUM) {
-    super(id, 'memory', content, priority);
-  }
-  
-  /**
-   * Create a clone of this layer
-   */
-  clone(): PromptLayer {
-    const clone = new MemoryLayer(this.id, this.content, this.priority);
-    clone.enabled = this.enabled;
-    clone.entries = [...this.entries];
-    clone.metadata = { ...this.metadata };
-    return clone;
-  }
-  
-  /**
-   * Get the memory content with all entries
-   */
-  override getContent(): string {
-    if (this.entries.length === 0) {
-      return this.content;
-    }
+  private maxEntries: number = 10;
 
-    // If we have entries, format them nicely
-    let result = this.content ? `${this.content}\n\n` : '';
-    result += 'RELEVANT CONTEXT:\n\n';
-    
-    // Sort entries by relevance if available, otherwise keep insertion order
-    const sortedEntries = [...this.entries].sort((a, b) => 
-      (b.relevance ?? 0) - (a.relevance ?? 0)
-    );
-    
-    for (const entry of sortedEntries) {
-      result += `[${entry.type.toUpperCase()}]`;
-      
-      if (entry.source) {
-        result += ` (from ${entry.source})`;
-      }
-      
-      if (entry.timestamp) {
-        result += ` ${entry.timestamp.toISOString()}`;
-      }
-      
-      result += ':\n';
-      result += entry.content;
-      result += '\n\n';
-    }
-    
-    return result;
+  constructor(id: string, content: string = '') {
+    super(id, 'memory', content, LayerPriority.MEDIUM);
   }
-  
+
+  clone(): MemoryLayer {
+    const cloned = new MemoryLayer(this.id, this.content);
+    cloned.entries = this.entries.map(entry => ({ ...entry }));
+    cloned.maxEntries = this.maxEntries;
+    return cloned;
+  }
+
   /**
    * Add a memory entry
-   * @param entry The entry to add
    */
   addEntry(entry: MemoryEntry): void {
     this.entries.push(entry);
-    this.metadata.lastModified = new Date();
+    
+    // Keep only the most recent entries
+    if (this.entries.length > this.maxEntries) {
+      this.entries = this.entries.slice(-this.maxEntries);
+    }
   }
-  
+
   /**
    * Get all memory entries
    */
   getEntries(): MemoryEntry[] {
     return [...this.entries];
   }
-  
+
   /**
-   * Clear all memory entries
-   */
-  clearEntries(): void {
-    this.entries = [];
-    this.metadata.lastModified = new Date();
-  }
-  
-  /**
-   * Filter entries by type
-   * @param type The type to filter by
-   * @returns Entries of the specified type
+   * Get entries by type
    */
   getEntriesByType(type: MemoryEntryType): MemoryEntry[] {
     return this.entries.filter(entry => entry.type === type);
   }
-  
+
   /**
-   * Update metadata
-   * @param updates The updates to apply
+   * Clear all entries
    */
-  updateMetadata(updates: Partial<PromptLayerMetadata>): void {
-    this.metadata = {
-      ...this.metadata,
-      ...updates,
-      lastModified: new Date()
-    };
+  clearEntries(): void {
+    this.entries = [];
+  }
+
+  /**
+   * Set maximum number of entries to keep
+   */
+  setMaxEntries(max: number): void {
+    if (max > 0) {
+      this.maxEntries = max;
+      if (this.entries.length > max) {
+        this.entries = this.entries.slice(-max);
+      }
+    }
+  }
+
+  /**
+   * Get formatted content with memory entries
+   */
+  getContent(): string {
+    const baseContent = super.getContent();
+    const parts: string[] = [];
+
+    if (baseContent) {
+      parts.push(baseContent);
+    }
+
+    if (this.entries.length > 0) {
+      parts.push('Relevant context from previous interactions:');
+      
+      this.entries.forEach((entry, index) => {
+        const timestamp = entry.timestamp.toLocaleTimeString();
+        const source = entry.source ? ` (${entry.source})` : '';
+        parts.push(`${index + 1}. [${entry.type}${source}] ${entry.content}`);
+      });
+    }
+
+    return parts.join('\n');
   }
 }
 
 /**
- * Factory for creating memory layers
+ * Create a memory layer
  */
-export class MemoryLayerFactory implements PromptLayerFactory {
-  createLayer(id: string, content: string, priority?: number): PromptLayer {
-    return new MemoryLayer(id, content, priority);
-  }
+export function createMemoryLayer(id: string, content?: string): MemoryLayer {
+  return new MemoryLayer(id, content);
 }
