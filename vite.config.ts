@@ -20,11 +20,15 @@ export default defineConfig(({ mode }) => {
   });
 
   // Get the base URL from environment variables or use '/' as default
-  const base = process.env.PUBLIC_URL || '/';
+  const base = env.REACT_APP_PUBLIC_URL || '/';
   console.log(`Using base URL: ${base}`);
 
+  // Stringify all env values for define
+  const stringifiedEnv = Object.fromEntries(
+    Object.entries(env).map(([k, v]) => [k, JSON.stringify(v)])
+  );
+
   return {
-    // Set the base URL for the application
     base,
     server: {
       host: "::",
@@ -32,27 +36,25 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      mode === 'development' &&
-      componentTagger(),
+      mode === 'development' && componentTagger(),
     ].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        "@frontend": path.resolve(__dirname, "./frontend"),
+        "@backend": path.resolve(__dirname, "./backend"),
+        "@shared": path.resolve(__dirname, "./shared"),
       },
     },
-    // Define environment variables to be replaced in the client code
     define: {
       'process.env': {
-        ...env,
-        // Ensure PUBLIC_URL is available in the client code
+        ...stringifiedEnv,
         PUBLIC_URL: JSON.stringify(base)
       }
     },
-    // Optimize build
     build: {
       outDir: 'dist',
       sourcemap: mode !== 'production',
-      // Reduce chunk size
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {

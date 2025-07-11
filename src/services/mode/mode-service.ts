@@ -8,7 +8,27 @@ import { Logger } from '../logging/logger';
 import { errorHandler } from '../error/error-handler';
 import { settingsService } from '../settings/settings-service';
 import { ResponseFormat, ResponseTone } from '../prompt-builder/layers/user-preferences-layer';
-import { EventEmitter } from 'events';
+// Simple browser-compatible event emitter
+class SimpleEventEmitter {
+  private listeners: Record<string, Function[]> = {};
+
+  on(event: string, callback: Function): void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(callback);
+  }
+
+  off(event: string, callback: Function): void {
+    if (!this.listeners[event]) return;
+    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+  }
+
+  emit(event: string, data?: any): void {
+    if (!this.listeners[event]) return;
+    this.listeners[event].forEach(callback => callback(data));
+  }
+}
 
 /**
  * Mode change event
@@ -25,14 +45,14 @@ export interface ModeChangeEvent {
 export class ModeService {
   private static instance: ModeService;
   private logger: Logger;
-  private eventEmitter: EventEmitter;
+  private eventEmitter: SimpleEventEmitter;
   private _activeMode: string = 'code'; // Default to code mode
   private _modes: Record<string, Mode> = { ...DEFAULT_MODES };
   private _customModes: Record<string, Mode> = {};
 
   private constructor() {
     this.logger = new Logger('ModeService');
-    this.eventEmitter = new EventEmitter();
+    this.eventEmitter = new SimpleEventEmitter();
     this.initialize();
   }
 

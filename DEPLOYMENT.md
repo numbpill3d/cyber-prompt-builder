@@ -22,9 +22,10 @@ This guide covers deploying the Cyber Prompt Builder to various cloud platforms.
 **Environment Variables:**
 - `NODE_ENV`: `production`
 - `PORT`: `10000` (Render default)
-- `VITE_OPENAI_API_KEY`: Your OpenAI API key
-- `VITE_CLAUDE_API_KEY`: Your Claude API key  
-- `VITE_GEMINI_API_KEY`: Your Gemini API key
+- `REACT_APP_PROVIDERS_OPENAI_API_KEY`: Your OpenAI API key
+- `REACT_APP_PROVIDERS_CLAUDE_API_KEY`: Your Claude API key  
+- `REACT_APP_PROVIDERS_GEMINI_API_KEY`: Your Gemini API key
+- `REACT_APP_PUBLIC_URL`: `/` (optional, for custom base path)
 
 ### 2. Railway
 
