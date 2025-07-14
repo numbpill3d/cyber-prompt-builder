@@ -104,7 +104,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         
         <div className="flex space-x-2">
           {onRegenerate && (
-            <Tooltip content="Regenerate code">
+            <Tooltip>
               <Button
                 size="sm"
                 variant="ghost"
@@ -117,7 +117,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           )}
           
           {onDownload && (
-            <Tooltip content="Download file">
+            <Tooltip>
               <Button
                 size="sm"
                 variant="ghost"
@@ -129,7 +129,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             </Tooltip>
           )}
           
-          <Tooltip content={copied ? "Copied!" : "Copy code"}>
+          <Tooltip>
             <Button
               size="sm"
               variant="ghost"
