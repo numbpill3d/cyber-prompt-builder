@@ -65,6 +65,11 @@ console.log('✅ JavaScript files exist in assets directory');
 const cssFiles = fs.readdirSync(assetsPath).filter(file => file.endsWith('.css'));
 console.log(`Found ${cssFiles.length} CSS files in assets directory`);
 
+// Don't fail if no CSS files are found - they might be inlined
+if (cssFiles.length === 0) {
+  console.warn('⚠️ No CSS files found in assets directory - they might be inlined');
+}
+
 // List all files in dist directory
 console.log('\nFiles in dist directory:');
 listFilesRecursively(distPath);

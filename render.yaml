@@ -4,13 +4,17 @@ services:
     env: node
     plan: free
     buildCommand: npm ci && npm run build && npm run build:check
-    startCommand: npm start
+    startCommand: node server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: REACT_APP_APP_ENVIRONMENT
+        value: production
+      - key: REACT_APP_PUBLIC_URL
+        value: /
     # Auto-deploy from main branch
     autoDeploy: true
     # Build settings
@@ -18,6 +22,9 @@ services:
       paths:
         - src/**
         - public/**
+        - frontend/**
+        - backend/**
+        - shared/**
         - package.json
         - package-lock.json
         - vite.config.ts
@@ -25,6 +32,7 @@ services:
         - index.html
         - server.js
         - check-build.js
+        - .env.production
     # Headers for security
     headers:
       - path: /*
