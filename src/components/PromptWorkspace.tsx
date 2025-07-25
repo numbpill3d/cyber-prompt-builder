@@ -122,7 +122,7 @@ const PromptWorkspace: React.FC = () => {
     // Add to output history
     const outputItem: OutputItem = {
       id: uuidv4(),
-      content: result.error ? result.error : result.code || '',
+      content: result.error ? result.error : (result.code ?? ''),
       timestamp: Date.now(),
       type: result.error ? 'error' : 'code',
       metadata: result.usage ? {
@@ -684,8 +684,8 @@ const PromptWorkspace: React.FC = () => {
                 
                 <TabsContent value="metrics" className="flex-1 overflow-auto">
                   <TokenMetrics 
-                    tokenCount={analysis?.tokenEstimation.count || 0}
-                    confidenceScore={analysis?.confidenceScore || 0}
+                    tokenCount={analysis?.tokenEstimation.count ?? 0}
+                    confidenceScore={analysis?.confidenceScore ?? 0}
                     modelName="GPT-4"
                     isProcessing={isProcessing}
                     logs={systemLogs}
