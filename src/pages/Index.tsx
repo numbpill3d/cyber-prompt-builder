@@ -49,7 +49,9 @@ const Index = () => {
           <Button 
             size="lg" 
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            onClick={() => navigate('/prompt-builder')}
+            onClick={() => {
+              navigate('/prompt-builder');
+            }}
           >
             <Zap className="h-5 w-5 mr-2" />
             Open Prompt Builder

@@ -18,7 +18,6 @@ interface TokenMetricsProps {
   modelName?: string;
   isProcessing?: boolean;
   logs?: string[];
-  memoryUsage?: number;
 }
 
 const TokenMetrics: React.FC<TokenMetricsProps> = ({
@@ -26,8 +25,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   confidenceScore = 0,
   modelName = 'GPT-4',
   isProcessing = false,
-  logs = [],
-  memoryUsage = 0
+  logs = []
 }) => {
   return (
     <div className="space-y-4">

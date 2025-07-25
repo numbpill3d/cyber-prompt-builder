@@ -20,7 +20,6 @@ import {
   Trash,
   Search,
   Database,
-  Cpu,
   BarChart3
 } from 'lucide-react';
 
@@ -33,7 +32,6 @@ import TokenMetrics from '@/components/TokenMetrics';
 import { promptMemoryStore, PromptSession } from '@/services/memory/prompt-memory-store';
 import { promptAnalyzer } from '@/services/analysis/prompt-analyzer';
 import { autoTagger } from '@/services/tagging/auto-tagger';
-import { pocketBaseService } from '@/services/storage/pocketbase-service';
 import { v4 as uuidv4 } from 'uuid';
 
 const PromptWorkspace: React.FC = () => {
@@ -47,7 +45,17 @@ const PromptWorkspace: React.FC = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string | undefined>();
   
   // State for analysis
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<{
+    tokenEstimation: {
+      count: number;
+      model: string;
+      costEstimate?: number;
+    };
+    confidenceScore: number;
+    complexity: string;
+    suggestedImprovements: string[];
+    promptType: string[];
+  } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
   // State for output history
@@ -102,13 +110,19 @@ const PromptWorkspace: React.FC = () => {
   };
   
   // Handle prompt execution
-  const handleExecute = (result: any) => {
+  const handleExecute = (result: {
+    error?: string;
+    code?: string;
+    usage?: {
+      total_tokens: number;
+    };
+  }) => {
     setIsProcessing(true);
     
     // Add to output history
     const outputItem: OutputItem = {
       id: uuidv4(),
-      content: result.error ? result.error : result.code,
+      content: result.error ? result.error : result.code || '',
       timestamp: Date.now(),
       type: result.error ? 'error' : 'code',
       metadata: result.usage ? {
@@ -132,17 +146,18 @@ const PromptWorkspace: React.FC = () => {
     setSelectedSessionId(sessionId);
     
     const session = promptMemoryStore.getSession(sessionId);
-    if (session && session.currentSnapshotId) {
-      const currentSnapshot = session.snapshots.find(s => s.id === session.currentSnapshotId);
-      if (currentSnapshot) {
-        setCurrentPrompt(currentSnapshot.content);
-        
-        // Analyze the prompt
-        const promptAnalysis = promptAnalyzer.analyzePrompt(currentSnapshot.content);
-        setAnalysis(promptAnalysis);
-        
-        addSystemLog(`Loaded session: ${session.name}`);
-      }
+    const currentSnapshot = session?.currentSnapshotId 
+      ? session.snapshots.find(s => s.id === session.currentSnapshotId)
+      : undefined;
+      
+    if (currentSnapshot) {
+      setCurrentPrompt(currentSnapshot.content);
+      
+      // Analyze the prompt
+      const promptAnalysis = promptAnalyzer.analyzePrompt(currentSnapshot.content);
+      setAnalysis(promptAnalysis);
+      
+      addSystemLog(`Loaded session: ${session.name}`);
     }
   };
   
@@ -252,7 +267,9 @@ const PromptWorkspace: React.FC = () => {
                   <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                    }}
                     placeholder="Search sessions..."
                     className="pl-8 bg-black/30 border-purple-500/30 focus:border-purple-500/50 text-white"
                   />
@@ -272,7 +289,9 @@ const PromptWorkspace: React.FC = () => {
                         className={`bg-black/30 border-purple-500/10 p-3 hover:border-purple-500/30 transition-colors cursor-pointer ${
                           selectedSessionId === session.id ? 'border-purple-500/50 bg-purple-500/10' : ''
                         }`}
-                        onClick={() => handleSelectSession(session.id)}
+                        onClick={() => {
+                          handleSelectSession(session.id);
+                        }}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="text-sm font-medium text-white">{session.name}</h3>
@@ -441,7 +460,9 @@ const PromptWorkspace: React.FC = () => {
                               <Input
                                 type="password"
                                 value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
+                                onChange={(e) => {
+                                  setApiKey(e.target.value);
+                                }}
                                 placeholder="sk-..."
                                 className="flex-1 bg-black/30 border-purple-500/30"
                               />
