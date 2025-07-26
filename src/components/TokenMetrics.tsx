@@ -60,7 +60,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
             <div className="flex items-center space-x-2">
               <Progress 
                 value={confidenceScore} 
-                max={100} 
+                className="w-16 h-1 bg-gray-700"
                 className="w-16 h-1 bg-gray-700"
               />
               <span className="text-xs font-medium">{confidenceScore}%</span>
