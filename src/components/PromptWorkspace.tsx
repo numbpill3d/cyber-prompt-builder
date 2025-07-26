@@ -273,7 +273,30 @@ model: 'gpt-4'
   const handleSaveApiKey = () => {
     localStorage.setItem('openai-api-key', apiKey);
     addSystemLog('Saved API key');
+// Handle clearing output history
+  const handleClearOutputHistory = () => {
+    setOutputHistory([]);
+    addSystemLog('Cleared output history');
   };
+  
+  // Handle copying an output item
+  const handleCopyOutput = (item: OutputItem) => {
+    navigator.clipboard.writeText(item.content).then(() => {
+      addSystemLog(`Copied output: ${item.id}`);
+    }).catch(err => {
+      addSystemLog(`Failed to copy output: ${item.id}. Error: ${err}`);
+    });
+  };
+  
+  // Handle removing an output item
+  const handleRemoveOutput = (id: string) => {
+    setOutputHistory(prev => prev.filter(item => item.id !== id));
+    addSystemLog(`Removed output: ${id}`);
+  };
+  
+  // Handle saving API key
+  const handleSaveApiKey = () => {
+    localStorage.setItem('openai-api-key', apiKey);
   
   // Format date for display
   const formatDate = (timestamp: number): string => {
