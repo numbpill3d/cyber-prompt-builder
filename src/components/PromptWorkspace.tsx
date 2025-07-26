@@ -136,7 +136,46 @@ const PromptWorkspace: React.FC = () => {
     
     // Analyze the prompt
     const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
-    setAnalysis(promptAnalysis);
+model: 'gpt-4'
+      } : undefined
+    };
+    
+    setOutputHistory(prev => [...prev, outputItem]);
+    addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
+    
+    // Analyze the prompt
+    try {
+      const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
+      setAnalysis(promptAnalysis);
+    } catch (error) {
+      console.error('Error analyzing prompt:', error);
+      addSystemLog(`Error analyzing prompt: ${error.message}`);
+    }
+    
+    setIsProcessing(false);
+  };
+  
+  // Handle session selection
+  const handleSelectSession = (sessionId: string) => {
+    setSelectedSessionId(sessionId);
+    
+    const session = promptMemoryStore.getSession(sessionId);
+    if (session && session.currentSnapshotId) {
+      const currentSnapshot = session.snapshots.find(s => s.id === session.currentSnapshotId);
+      if (currentSnapshot) {
+        setCurrentPrompt(currentSnapshot.content);
+        
+        // Analyze the prompt
+        try {
+          const promptAnalysis = promptAnalyzer.analyzePrompt(currentSnapshot.content);
+          setAnalysis(promptAnalysis);
+        } catch (error) {
+          console.error('Error analyzing prompt:', error);
+          addSystemLog(`Error analyzing prompt: ${error.message}`);
+        }
+        
+        addSystemLog(`Loaded session: ${session.name}`);
+      }
     
     setIsProcessing(false);
   };
