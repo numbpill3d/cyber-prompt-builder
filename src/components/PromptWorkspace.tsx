@@ -745,6 +745,56 @@ model: 'gpt-4'
       />
     </div>
   );
+// Import statements remain unchanged
+
+const PromptWorkspace: React.FC = () => {
+  // State management remains unchanged
+
+  // Helper functions remain unchanged
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal">
+          <SessionPanel
+            sessions={filteredSessions}
+            selectedSessionId={selectedSessionId}
+            onSelectSession={handleSelectSession}
+            onCreateSession={handleCreateSession}
+            onDeleteSession={handleDeleteSession}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+          <EditorPanel
+            currentPrompt={currentPrompt}
+            selectedSessionId={selectedSessionId}
+            onSavePrompt={handleSavePrompt}
+            onExecute={handleExecute}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+            onSaveApiKey={handleSaveApiKey}
+          />
+          <AnalysisPanel
+            analysis={analysis}
+            isProcessing={isProcessing}
+            systemLogs={systemLogs}
+          />
+        </ResizablePanelGroup>
+      </div>
+      <FloatingDock
+        items={outputHistory}
+        onClear={handleClearOutputHistory}
+        onCopy={handleCopyOutput}
+        onRemove={handleRemoveOutput}
+      />
+    </div>
+  );
 };
+
+// TODO: Implement SessionPanel component
+// TODO: Implement EditorPanel component
+// TODO: Implement AnalysisPanel component
+
+export default PromptWorkspace;
 
 export default PromptWorkspace;
