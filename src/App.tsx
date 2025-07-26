@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AgentLab from "./pages/AgentLab";
 import ModeSettings from "./pages/ModeSettings";
 import DevTools from "./pages/DevTools";
+import PromptBuilder from "./pages/PromptBuilder";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/agent-lab" element={<AgentLab />} />
             <Route path="/modes" element={<ModeSettings />} />
             <Route path="/dev-tools" element={<DevTools />} />
+            <Route path="/prompt-builder" element={<PromptBuilder />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
