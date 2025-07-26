@@ -83,7 +83,13 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
               <span className="text-xs text-gray-400">Time</span>
             </div>
             <span className="text-xs font-medium">
+<span className="text-xs text-gray-400">Time</span>
+            </div>
+            <span className="text-xs font-medium">
+              {/* TODO: Implement time update using useEffect and useState */}
               {new Date().toLocaleTimeString()}
+            </span>
+          </div>
             </span>
           </div>
         </div>
