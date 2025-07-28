@@ -135,9 +135,11 @@ const PromptWorkspace: React.FC = () => {
     addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
     
     // Analyze the prompt
-    const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
-model: 'gpt-4'
-      } : undefined
+const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
+const someVar = someCondition
+  ? { model: 'gpt-4' }
+  : undefined;
+
     };
     
     setOutputHistory(prev => [...prev, outputItem]);
