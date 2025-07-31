@@ -106,9 +106,9 @@ const testKeyFormat = async (provider: 'gemini' | 'claude') => {
   const handleThemeChange = (value: ThemeOption) => {
     setTheme(value);
     localStorage.setItem('theme_preference', value);
-    applyTheme(value);
-  };
-
+      id="openai"
+      type="password"
+      value={openaiKey}
   const saveKey = (provider: 'openai' | 'gemini' | 'claude') => {
     const keyMap = { openai: openaiKey, gemini: geminiKey, claude: claudeKey };
     const key = keyMap[provider].trim();
