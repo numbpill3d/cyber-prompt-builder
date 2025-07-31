@@ -49,9 +49,11 @@ export default function Settings() {
     setTheme(storedTheme);
   }, []);
 
-  // Apply theme when it changes
-  useEffect(() => {
-    applyTheme(theme);
+      if (key) {
+        // Use a simple encryption or consider a more robust solution
+        const encryptedKey = btoa(key); // Basic encoding, consider stronger encryption
+        localStorage.setItem(`${provider}_api_key`, encryptedKey);
+        toast({ title: 'Key Saved', description: `${provider} API key saved.` });
   }, [theme]);
 
   const applyTheme = (value: ThemeOption) => {
