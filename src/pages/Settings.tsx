@@ -23,7 +23,21 @@ export default function Settings() {
   useEffect(() => {
     setOpenaiKey(localStorage.getItem('openai_api_key') || '');
     setGeminiKey(localStorage.getItem('gemini_api_key') || '');
-    setClaudeKey(localStorage.getItem('claude_api_key') || '');
+// Load stored settings on mount
+  useEffect(() => {
+    try {
+      setOpenaiKey(localStorage.getItem('openai_api_key') || '');
+      setGeminiKey(localStorage.getItem('gemini_api_key') || '');
+      setClaudeKey(localStorage.getItem('claude_api_key') || '');
+      const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
+      setTheme(storedTheme);
+      applyTheme(storedTheme);
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
+    }
+  }, []);
+
+  const applyTheme = (value: ThemeOption) => {
     const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
     setTheme(storedTheme);
 // Load stored settings on mount
