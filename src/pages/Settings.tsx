@@ -80,20 +80,23 @@ export default function Settings() {
       root.classList.toggle('dark', value === 'dark');
     }
   };
-
-  const handleThemeChange = (value: ThemeOption) => {
-    setTheme(value);
-    localStorage.setItem('theme_preference', value);
-  };
-
-  const saveKey = (provider: 'openai' | 'gemini' | 'claude') => {
-  }, []);
-
-  const applyTheme = (value: ThemeOption) => {
-    const root = document.body;
-    if (!root) return;
-    if (value === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const testKeyFormat = async (provider: 'gemini' | 'claude') => {
+  setValidating(v => ({ ...v, [provider]: true }));
+  try {
+    const keyMap = { gemini: geminiKey, claude: claudeKey };
+    const key = keyMap[provider];
+    const valid = validateKeyFormat(key, provider);
+    toast({
+      title: valid ? 'API Key Looks Valid' : 'Invalid API Key',
+      description: valid
+        ? `${provider} key format appears correct.`
+        : `Please check your ${provider} API key.`,
+      variant: valid ? undefined : 'destructive'
+    });
+  } finally {
+    setValidating(v => ({ ...v, [provider]: false }));
+  }
+};
       root.classList.toggle('dark', prefersDark);
     } else {
       root.classList.toggle('dark', value === 'dark');
