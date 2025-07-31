@@ -5,6 +5,7 @@
 
 import { StructuredResponse } from './response-handler';
 import { AIPrompt } from './providers/index';
+import { getStorage } from '@shared/services/storage';
 
 // Simple internal function to generate IDs instead of relying on uuid package
 function generateId(): string {
@@ -47,6 +48,7 @@ export interface SessionIteration {
 export class SessionManager {
   private sessions: Map<string, Session> = new Map();
   private currentSessionId: string | null = null;
+  private storage = getStorage();
   
   /**
    * Create a new session
@@ -173,9 +175,9 @@ export class SessionManager {
    */
   deleteSession(sessionId: string): boolean {
     if (!this.sessions.has(sessionId)) return false;
-    
+
     this.sessions.delete(sessionId);
-    localStorage.removeItem(`session_${sessionId}`);
+    this.storage.removeItem(`session_${sessionId}`);
     
     // If we deleted the current session, set current to null
     if (this.currentSessionId === sessionId) {
@@ -337,30 +339,29 @@ export class SessionManager {
   }
   
   /**
-   * Save a session to localStorage
+   * Save a session using the configured storage
    */
   private saveSession(sessionId: string): void {
     const session = this.sessions.get(sessionId);
     if (!session) return;
-    
+
     try {
-      localStorage.setItem(`session_${sessionId}`, JSON.stringify(session));
+      this.storage.setItem(`session_${sessionId}`, JSON.stringify(session));
     } catch (error) {
-      console.error('Error saving session to localStorage:', error);
+      console.error('Error saving session:', error);
     }
   }
   
   /**
-   * Load all sessions from localStorage
+   * Load all sessions from storage
    */
   loadSessions(): void {
     try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith('session_')) {
+      for (const key of this.storage.keys()) {
+        if (key.startsWith('session_')) {
           const sessionId = key.replace('session_', '');
-          const sessionData = localStorage.getItem(key);
-          
+          const sessionData = this.storage.getItem(key);
+
           if (sessionData) {
             const session = JSON.parse(sessionData) as Session;
             this.sessions.set(sessionId, session);
@@ -375,7 +376,7 @@ export class SessionManager {
         this.currentSessionId = mostRecent.id;
       }
     } catch (error) {
-      console.error('Error loading sessions from localStorage:', error);
+      console.error('Error loading sessions:', error);
     }
   }
 }
