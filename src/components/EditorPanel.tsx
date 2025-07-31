@@ -30,8 +30,8 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
           <Button size="sm" onClick={() => onSavePrompt(sessionId, prompt)}>
             Save
           </Button>
-        )}
-        {onExecutePrompt && (
+        {onExecutePrompt && prompt.trim() && (
+          <Button
           <Button
             size="sm"
             variant="secondary"
