@@ -11,6 +11,9 @@ import AgentLab from "./pages/AgentLab";
 import ModeSettings from "./pages/ModeSettings";
 import DevTools from "./pages/DevTools";
 import PromptBuilder from "./pages/PromptBuilder";
+import History from "./pages/History";
+import Export from "./pages/Export";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +30,9 @@ const App = () => (
             <Route path="/agent-lab" element={<AgentLab />} />
             <Route path="/modes" element={<ModeSettings />} />
             <Route path="/dev-tools" element={<DevTools />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/export" element={<Export />} />
+            <Route path="/account" element={<Account />} />
             <Route path="/prompt-builder" element={<PromptBuilder />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
