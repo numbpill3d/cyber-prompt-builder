@@ -74,7 +74,22 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     if (location.pathname === '/account') return 'ACCOUNT';
     if (location.pathname === '/dev-tools') return 'DEV_TOOLS';
     return 'HOME';
-  });
+const location = useLocation();
+
+  // Set the active item based on the current route
+  const activeItem = useMemo(() => { // import { useMemo } from 'react';
+    if (location.pathname === '/settings') return 'SETTINGS';
+    if (location.pathname === '/history') return 'HISTORY';
+    if (location.pathname === '/export') return 'EXPORT';
+    if (location.pathname === '/account') return 'ACCOUNT';
+    if (location.pathname === '/dev-tools') return 'DEV_TOOLS';
+    return 'HOME';
+  }, [location.pathname]);
+
+  const handleItemClick = (item: string) => {
+    // Navigate to the appropriate route
+    switch (item) {
+      case 'HOME':
 
   const handleItemClick = (item: string) => {
     setActiveItem(item);
