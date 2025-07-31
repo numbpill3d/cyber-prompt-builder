@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { ScrollArea } from './ui/scroll-area';
@@ -27,6 +27,17 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   isProcessing = false,
   logs = []
 }) => {
+  const [currentTime, setCurrentTime] = useState(
+    new Date().toLocaleTimeString()
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="space-y-4">
       <Card className="bg-black/30 border-purple-500/10 p-3">
@@ -58,9 +69,8 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
               <span className="text-xs text-gray-400">Confidence</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Progress 
-                value={confidenceScore} 
-                className="w-16 h-1 bg-gray-700"
+              <Progress
+                value={confidenceScore}
                 className="w-16 h-1 bg-gray-700"
               />
               <span className="text-xs font-medium">{confidenceScore}%</span>
@@ -82,15 +92,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
               <Clock className="h-3 w-3 text-purple-400 mr-2" />
               <span className="text-xs text-gray-400">Time</span>
             </div>
-            <span className="text-xs font-medium">
-<span className="text-xs text-gray-400">Time</span>
-            </div>
-            <span className="text-xs font-medium">
-              {/* TODO: Implement time update using useEffect and useState */}
-              {new Date().toLocaleTimeString()}
-            </span>
-          </div>
-            </span>
+            <span className="text-xs font-medium">{currentTime}</span>
           </div>
         </div>
       </Card>
