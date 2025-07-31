@@ -36,7 +36,13 @@ const FloatingDock: React.FC<FloatingDockProps> = ({ items, onClear, onCopy, onR
             <pre className="text-xs whitespace-pre-wrap">{item.content}</pre>
             <div className="flex justify-end space-x-2 mt-1">
               <Button size="icon" variant="ghost" onClick={() => onCopy(item)}>
-                📋
+<pre className="text-xs whitespace-pre-wrap">{item.content}</pre>
+            <div className="flex justify-end space-x-2 mt-1">
+              <Button size="icon" variant="ghost" onClick={() => onCopy(item)}>
+                Copy
+              </Button>
+              <Button size="icon" variant="ghost" onClick={() => onRemove(item.id)}>
+                ✖
               </Button>
               <Button size="icon" variant="ghost" onClick={() => onRemove(item.id)}>
                 ✖
