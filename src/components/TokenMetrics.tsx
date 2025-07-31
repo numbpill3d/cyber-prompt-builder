@@ -37,7 +37,17 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
       1000
     );
     return () => clearInterval(interval);
-  }, []);
+isProcessing = false,
+  logs = []
+}) => {
+  // Import useCurrentTime hook
+  // import { useCurrentTime } from './hooks/useCurrentTime';
+  
+  const currentTime = useCurrentTime();
+
+  return (
+    <div className="space-y-4">
+      <Card className="bg-black/30 border-purple-500/10 p-3">
   return (
     <div className="space-y-4">
       <Card className="bg-black/30 border-purple-500/10 p-3">
