@@ -75,6 +75,7 @@ The application is production-ready with the following features:
 ### Production Deployment
 
 #### Environment Variables
+> **Note**: The `.env.example` file now uses `REACT_APP_PROVIDERS_*` keys instead of the old `VITE_*` names. Render expects these variable names when configuring your service.
 ```bash
 # Required
 NODE_ENV=production
