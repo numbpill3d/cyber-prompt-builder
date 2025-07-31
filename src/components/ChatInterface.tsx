@@ -197,7 +197,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
     }
 
     const data = await response.json();
-    const text = Array.isArray(data.content) ? data.content.map((p: any) => p.text).join('') : '';
+}
+
+    const data = await response.json();
+    const text = Array.isArray(data.content) ? data.content.map((contentPart: any) => contentPart.text).join('') : '';
+    return text || 'No response generated';
+  };
     return text || 'No response generated';
   };
 
