@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { ScrollArea } from './ui/scroll-area';
-import { 
-  Cpu, 
-  Zap, 
-  Activity, 
-  Terminal, 
-  Clock, 
-  BarChart3, 
+import {
+  Cpu,
+  Zap,
+  Activity,
+  Terminal,
+  Clock,
+  BarChart3,
   Layers
 } from 'lucide-react';
 
@@ -32,25 +32,13 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   );
 
   useEffect(() => {
-const interval = setInterval(
-  () => setCurrentTime(new Date().toLocaleTimeString()),
-  1000
-);
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
 
     return () => clearInterval(interval);
-isProcessing = false,
-  logs = []
-}) => {
-  // Import useCurrentTime hook
-  // import { useCurrentTime } from './hooks/useCurrentTime';
-  
-// Use the custom hook instead of useState and useEffect
+  }, []);
 
-  const currentTime = useCurrentTime();
-
-  return (
-    <div className="space-y-4">
-      <Card className="bg-black/30 border-purple-500/10 p-3">
   return (
     <div className="space-y-4">
       <Card className="bg-black/30 border-purple-500/10 p-3">
@@ -58,7 +46,7 @@ isProcessing = false,
           <Cpu className="h-4 w-4 text-purple-400 mr-2" />
           System Status
         </h3>
-        
+
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -67,7 +55,7 @@ isProcessing = false,
             </div>
             <span className="text-xs font-medium">{modelName}</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Layers className="h-3 w-3 text-purple-400 mr-2" />
@@ -75,7 +63,7 @@ isProcessing = false,
             </div>
             <span className="text-xs font-medium">{tokenCount}</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <BarChart3 className="h-3 w-3 text-purple-400 mr-2" />
@@ -89,7 +77,7 @@ isProcessing = false,
               <span className="text-xs font-medium">{confidenceScore}%</span>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Activity className={`h-3 w-3 ${isProcessing ? 'text-green-400' : 'text-gray-400'} mr-2`} />
@@ -99,7 +87,7 @@ isProcessing = false,
               {isProcessing ? 'Processing' : 'Idle'}
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Clock className="h-3 w-3 text-purple-400 mr-2" />
@@ -109,13 +97,13 @@ isProcessing = false,
           </div>
         </div>
       </Card>
-      
+
       <Card className="bg-black/30 border-purple-500/10 p-3">
         <h3 className="text-sm font-medium mb-2 flex items-center">
           <Terminal className="h-4 w-4 text-purple-400 mr-2" />
           System Logs
         </h3>
-        
+
         <ScrollArea className="h-[200px] rounded bg-black/40 p-2">
           <div className="font-mono text-xs text-gray-300 space-y-1">
             {logs.map((log, index) => (
