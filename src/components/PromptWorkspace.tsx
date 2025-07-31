@@ -309,7 +309,9 @@ const someVar = someCondition
   const handleSaveApiKey = () => {
     localStorage.setItem('openai_api_key', apiKey);
     localStorage.removeItem('openai-api-key');
-  
+    addSystemLog('Saved API key');
+  };
+
   // Format date for display
   const formatDate = (timestamp: number): string => {
     return new Date(timestamp).toLocaleString();
