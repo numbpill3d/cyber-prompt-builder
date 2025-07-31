@@ -3,8 +3,9 @@ services:
     name: cyber-prompt-builder
     env: node
     plan: free
-    buildCommand: npm ci && npm run build
-    nodeVersion: 18.18.0
+buildCommand: npm ci --include=dev && npm run build
+nodeVersion: 18.18.0
+
     startCommand: node server.js
     healthCheckPath: /health
     envVars:
@@ -40,11 +41,3 @@ services:
         - server.js
         - check-build.js
         - .env.production
-    # Headers for security
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
