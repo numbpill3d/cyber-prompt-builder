@@ -32,25 +32,12 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   );
 
   useEffect(() => {
-const interval = setInterval(
-  () => setCurrentTime(new Date().toLocaleTimeString()),
-  1000
-);
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
 
     return () => clearInterval(interval);
-isProcessing = false,
-  logs = []
-}) => {
-  // Import useCurrentTime hook
-  // import { useCurrentTime } from './hooks/useCurrentTime';
-  
-// Use the custom hook instead of useState and useEffect
-
-  const currentTime = useCurrentTime();
-
-  return (
-    <div className="space-y-4">
-      <Card className="bg-black/30 border-purple-500/10 p-3">
+  }, []);
   return (
     <div className="space-y-4">
       <Card className="bg-black/30 border-purple-500/10 p-3">
