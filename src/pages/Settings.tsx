@@ -26,7 +26,37 @@ export default function Settings() {
     setClaudeKey(localStorage.getItem('claude_api_key') || '');
     const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
     setTheme(storedTheme);
-    applyTheme(storedTheme);
+// Load stored settings on mount
+  useEffect(() => {
+    setOpenaiKey(localStorage.getItem('openai_api_key') || '');
+    setGeminiKey(localStorage.getItem('gemini_api_key') || '');
+    setClaudeKey(localStorage.getItem('claude_api_key') || '');
+    const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
+    setTheme(storedTheme);
+  }, []);
+
+  // Apply theme when it changes
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  const applyTheme = (value: ThemeOption) => {
+    const root = document.body;
+    if (!root) return;
+    if (value === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.toggle('dark', prefersDark);
+    } else {
+      root.classList.toggle('dark', value === 'dark');
+    }
+  };
+
+  const handleThemeChange = (value: ThemeOption) => {
+    setTheme(value);
+    localStorage.setItem('theme_preference', value);
+  };
+
+  const saveKey = (provider: 'openai' | 'gemini' | 'claude') => {
   }, []);
 
   const applyTheme = (value: ThemeOption) => {
