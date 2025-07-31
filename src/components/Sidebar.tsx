@@ -69,6 +69,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   // Set the active item based on the current route
   const [activeItem, setActiveItem] = useState(() => {
     if (location.pathname === '/settings') return 'SETTINGS';
+    if (location.pathname === '/history') return 'HISTORY';
+    if (location.pathname === '/export') return 'EXPORT';
+    if (location.pathname === '/account') return 'ACCOUNT';
     if (location.pathname === '/dev-tools') return 'DEV_TOOLS';
     return 'HOME';
   });
@@ -83,6 +86,15 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         break;
       case 'SETTINGS':
         navigate('/settings');
+        break;
+      case 'HISTORY':
+        navigate('/history');
+        break;
+      case 'EXPORT':
+        navigate('/export');
+        break;
+      case 'ACCOUNT':
+        navigate('/account');
         break;
       case 'DEV_TOOLS':
         navigate('/dev-tools');
