@@ -29,7 +29,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
   const getProviderStatus = () => {
     return {
       gemini: !!localStorage.getItem('gemini_api_key'),
-      openai: !!localStorage.getItem('openai_api_key'),
+      openai: !!(localStorage.getItem('openai_api_key') || localStorage.getItem('openai-api-key')),
       claude: !!localStorage.getItem('claude_api_key')
     };
   };
@@ -67,8 +67,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
     setIsLoading(true);
 
     try {
-      // Get API key from localStorage
-      const apiKey = localStorage.getItem(`${selectedProvider}_api_key`);
+      // Get API key from localStorage (support legacy OpenAI key)
+      let apiKey = localStorage.getItem(`${selectedProvider}_api_key`);
+      if (!apiKey && selectedProvider === 'openai') {
+        apiKey = localStorage.getItem('openai-api-key');
+        if (apiKey) {
+          localStorage.setItem('openai_api_key', apiKey);
+          localStorage.removeItem('openai-api-key');
+        }
+      }
       
       if (!apiKey) {
         throw new Error(`Please configure your ${selectedProvider.toUpperCase()} API key in settings`);

@@ -21,9 +21,15 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ open, onOpenChange }) => {
 
   useEffect(() => {
     if (open) {
-      // Load existing API key from localStorage
-      const savedKey = localStorage.getItem('openai_api_key') || '';
+      // Load existing API key from localStorage (support legacy key)
+      const newKey = localStorage.getItem('openai_api_key');
+      const oldKey = localStorage.getItem('openai-api-key');
+      const savedKey = newKey || oldKey || '';
       setApiKey(savedKey);
+      if (oldKey && !newKey) {
+        localStorage.setItem('openai_api_key', oldKey);
+        localStorage.removeItem('openai-api-key');
+      }
       setIsValid(null);
     }
   }, [open]);
@@ -66,6 +72,7 @@ const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ open, onOpenChange }) => {
   const handleSave = () => {
     if (apiKey.trim()) {
       localStorage.setItem('openai_api_key', apiKey.trim());
+      localStorage.removeItem('openai-api-key');
       toast({
         title: "API Key Saved",
         description: "Your OpenAI API key has been saved locally.",

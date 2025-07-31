@@ -71,11 +71,19 @@ const PromptWorkspace: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSessions, setFilteredSessions] = useState<PromptSession[]>([]);
   
-  // Load API key from localStorage
+  // Load API key from localStorage (migrate from old key if present)
   useEffect(() => {
-    const storedApiKey = localStorage.getItem('openai-api-key');
+    const newKey = localStorage.getItem('openai_api_key');
+    const oldKey = localStorage.getItem('openai-api-key');
+    const storedApiKey = newKey || oldKey;
+
     if (storedApiKey) {
       setApiKey(storedApiKey);
+      // migrate to new key if needed
+      if (oldKey && !newKey) {
+        localStorage.setItem('openai_api_key', oldKey);
+        localStorage.removeItem('openai-api-key');
+      }
     }
   }, []);
   
@@ -273,7 +281,8 @@ const someVar = someCondition
   
   // Handle saving API key
   const handleSaveApiKey = () => {
-    localStorage.setItem('openai-api-key', apiKey);
+    localStorage.setItem('openai_api_key', apiKey);
+    localStorage.removeItem('openai-api-key');
     addSystemLog('Saved API key');
 // Handle clearing output history
   const handleClearOutputHistory = () => {
@@ -298,7 +307,8 @@ const someVar = someCondition
   
   // Handle saving API key
   const handleSaveApiKey = () => {
-    localStorage.setItem('openai-api-key', apiKey);
+    localStorage.setItem('openai_api_key', apiKey);
+    localStorage.removeItem('openai-api-key');
   
   // Format date for display
   const formatDate = (timestamp: number): string => {
