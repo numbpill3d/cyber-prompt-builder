@@ -15,6 +15,12 @@ services:
         value: production
       - key: REACT_APP_PUBLIC_URL
         value: /
+      - key: REACT_APP_PROVIDERS_OPENAI_API_KEY
+        sync: false
+      - key: REACT_APP_PROVIDERS_CLAUDE_API_KEY
+        sync: false
+      - key: REACT_APP_PROVIDERS_GEMINI_API_KEY
+        sync: false
     # Auto-deploy from main branch
     autoDeploy: true
     # Build settings
