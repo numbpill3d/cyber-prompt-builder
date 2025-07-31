@@ -7,7 +7,8 @@ export interface PromptEditorProps {
   onExecute?: (prompt: string) => void;
 }
 
-const PromptEditor: React.FC<PromptEditorProps> = () => {
+const PromptEditor: React.FC<PromptEditorProps> = (props) => {
+  // Placeholder component - props will be implemented later
   return <div>PromptEditor</div>;
 };
 
