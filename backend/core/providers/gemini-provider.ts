@@ -12,7 +12,7 @@ export class GeminiProvider implements AIProvider {
     try {
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${options.model || 'gemini-pro'}/generateContent?key=${options.apiKey}`;
       
-      const response = await fetch(apiUrl, {
+      let response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ export class GeminiProvider implements AIProvider {
         };
       }
 
-      const data = await response.json();
+      let data = await response.json();
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
       return {
@@ -62,7 +62,7 @@ export class GeminiProvider implements AIProvider {
     options: AIProviderOptions, 
     onChunk: (chunk: StreamingResponseChunk) => void
   ): Promise<AIResponse> {
-    const response = await this.generateResponse(prompt, options);
+    let response = await this.generateResponse(prompt, options);
     onChunk({
       content: response.content,
       isComplete: true,
@@ -84,7 +84,7 @@ export class GeminiProvider implements AIProvider {
 
   async isApiKeyValid(apiKey: string): Promise<boolean> {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
       return response.ok;
     } catch {
       return false;
