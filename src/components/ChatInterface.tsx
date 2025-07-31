@@ -76,11 +76,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
 
       // Make API call based on selected provider
       let response;
-      
+
       if (selectedProvider === 'gemini') {
         response = await callGeminiAPI(input, apiKey);
       } else if (selectedProvider === 'openai') {
         response = await callOpenAIAPI(input, apiKey);
+      } else if (selectedProvider === 'claude') {
+        response = await callClaudeAPI(input, apiKey);
       } else {
         throw new Error('Unsupported provider');
       }
@@ -171,6 +173,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
     return data.choices?.[0]?.message?.content || 'No response generated';
   };
 
+  const callClaudeAPI = async (prompt: string, apiKey: string): Promise<string> => {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-opus-20240229',
+        max_tokens: 2048,
+        temperature: 0.7,
+        messages: [
+          { role: 'user', content: prompt }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Claude API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    const text = Array.isArray(data.content) ? data.content.map((p: any) => p.text).join('') : '';
+    return text || 'No response generated';
+  };
+
   const extractCodeBlocks = (text: string): string[] => {
     const codeBlockRegex = /```[\s\S]*?```/g;
     const matches = text.match(codeBlockRegex) || [];
@@ -190,13 +220,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
         <div className="flex items-center justify-between">
           <h3 className="font-orbitron text-lg text-cyber-bright-blue">AI Chat</h3>
           <div className="flex items-center gap-2">
-            <select 
-              value={selectedProvider} 
+            <select
+              value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value)}
               className="px-2 py-1 text-xs bg-transparent border border-cyber-bright-blue border-opacity-30 rounded text-cyber-black"
             >
               <option value="gemini">Gemini (Free) {providerStatus.gemini ? '✓' : '⚠'}</option>
               <option value="openai">OpenAI {providerStatus.openai ? '✓' : '⚠'}</option>
+              <option value="claude">Claude {providerStatus.claude ? '✓' : '⚠'}</option>
             </select>
             {!providerStatus[selectedProvider as keyof typeof providerStatus] && (
               <span className="text-xs text-red-500">No API key</span>
