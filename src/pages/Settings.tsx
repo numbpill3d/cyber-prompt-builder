@@ -31,13 +31,25 @@ export default function Settings() {
       setOpenaiKey(localStorage.getItem('openai_api_key') || '');
       setGeminiKey(localStorage.getItem('gemini_api_key') || '');
       setClaudeKey(localStorage.getItem('claude_api_key') || '');
-      const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
-      setTheme(storedTheme);
-      applyTheme(storedTheme);
-    } catch (error) {
-      console.error('Error accessing localStorage:', error);
-    }
-  }, []);
+        if (!root) return;
+  
+        // Remove existing listener
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  
+        if (value === 'system') {
+          const prefersDark = mediaQuery.matches;
+          root.classList.toggle('dark', prefersDark);
+          mediaQuery.addEventListener('change', handleSystemThemeChange);
+        } else {
+          root.classList.toggle('dark', value === 'dark');
+        }
+      };
+
+      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+        if (theme === 'system') {
+          document.body.classList.toggle('dark', e.matches);
+        }
 
   const applyTheme = (value: ThemeOption) => {
     const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
