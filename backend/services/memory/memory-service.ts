@@ -135,7 +135,7 @@ export abstract class BaseMemoryService implements MemoryService {
     params: Partial<MemorySearchParams> = {}
   ): Promise<MemorySearchResult> {
     // Get embedding for the content
-    const embedding = await this.embedText(content);
+    let embedding = await this.embedText(content);
     
     // Search for similar memories using the embedding
     return this.searchMemories(collection, {
@@ -170,7 +170,7 @@ export abstract class BaseMemoryService implements MemoryService {
    * Clear all memories associated with a session
    */
   async clearSessionMemories(sessionId: string): Promise<boolean> {
-    const memories = await this.getSessionMemories(sessionId);
+    let memories = await this.getSessionMemories(sessionId);
     const collections = new Set(memories.map(m => m.metadata.sessionId));
     
     for (const collection of Array.from(collections)) {
