@@ -822,4 +822,3 @@ const PromptWorkspace: React.FC = () => {
 
 export default PromptWorkspace;
 
-export default PromptWorkspace;

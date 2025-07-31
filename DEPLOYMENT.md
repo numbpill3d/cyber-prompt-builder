@@ -80,18 +80,19 @@ docker build -t cyber-prompt-builder .
 
 # Run container
 docker run -p 3000:3000 \
-  -e VITE_OPENAI_API_KEY=your_key \
-  -e VITE_CLAUDE_API_KEY=your_key \
-  -e VITE_GEMINI_API_KEY=your_key \
+  -e REACT_APP_PROVIDERS_OPENAI_API_KEY=your_key \
+  -e REACT_APP_PROVIDERS_CLAUDE_API_KEY=your_key \
+  -e REACT_APP_PROVIDERS_GEMINI_API_KEY=your_key \
   cyber-prompt-builder
 ```
 
 ## Environment Variables
+> **Note**: Environment keys now use the `REACT_APP_PROVIDERS_*` prefix rather than `VITE_*`. Be sure to update any existing variables to the new names.
 
 ### Required
-- `VITE_OPENAI_API_KEY` - OpenAI API key
-- `VITE_CLAUDE_API_KEY` - Anthropic Claude API key
-- `VITE_GEMINI_API_KEY` - Google Gemini API key
+- `REACT_APP_PROVIDERS_OPENAI_API_KEY` - OpenAI API key
+- `REACT_APP_PROVIDERS_CLAUDE_API_KEY` - Anthropic Claude API key
+- `REACT_APP_PROVIDERS_GEMINI_API_KEY` - Google Gemini API key
 
 ### Optional
 - `NODE_ENV` - Environment (production/development)
