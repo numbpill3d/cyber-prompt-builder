@@ -5,7 +5,7 @@ import { cn } from '../lib/utils';
 import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Copy, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
-import { toast } from './ui/sonner';
+import { toast } from '@/hooks/use-toast';
 
 interface TerminalProps {
   className?: string;
@@ -55,7 +55,11 @@ export const Terminal: React.FC<TerminalProps> = ({
         }]);
       } catch (error) {
         console.error('Failed to initialize terminal:', error);
-        toast.error('Failed to initialize terminal');
+        toast({
+          title: 'Terminal Error',
+          description: 'Failed to initialize terminal',
+          variant: 'destructive',
+        });
       }
     };
     
@@ -170,8 +174,19 @@ export const Terminal: React.FC<TerminalProps> = ({
   const handleCopyOutput = () => {
     const text = output.map(event => event.data).join('\n');
     navigator.clipboard.writeText(text)
-      .then(() => toast.success('Terminal output copied to clipboard'))
-      .catch(() => toast.error('Failed to copy terminal output'));
+      .then(() =>
+        toast({
+          title: 'Copied',
+          description: 'Terminal output copied to clipboard',
+        })
+      )
+      .catch(() =>
+        toast({
+          title: 'Copy Failed',
+          description: 'Failed to copy terminal output',
+          variant: 'destructive',
+        })
+      );
   };
   
   const toggleMaximize = () => {
