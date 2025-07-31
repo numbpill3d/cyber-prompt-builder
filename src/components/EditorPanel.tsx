@@ -34,8 +34,9 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
           <Button
           <Button
             size="sm"
-            variant="secondary"
-            onClick={() => onExecutePrompt(prompt)}
+          onClick={() => onExecutePrompt(prompt)}
+          disabled={!prompt.trim()}
+        >
           >
             Run
           </Button>
