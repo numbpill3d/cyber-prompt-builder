@@ -35,7 +35,13 @@ class PromptMemoryStore {
 
   /** Retrieve a session by id */
   getSession(id: string): PromptSession | undefined {
-    return this.sessions.find(s => s.id === id);
+// Import the sanitize-html package for input sanitization
+// import sanitizeHtml from 'sanitize-html';
+
+getSession(id: string): PromptSession | undefined {
+  const sanitizedId = sanitizeHtml(id, { allowedTags: [], allowedAttributes: {} });
+  return this.sessions.find(s => s.id === sanitizedId);
+}
   }
 
   /** Create a new session with an optional initial prompt */
