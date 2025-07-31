@@ -32,9 +32,10 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
+const interval = setInterval(
+  () => setCurrentTime(new Date().toLocaleTimeString()),
+  1000
+);
 
     return () => clearInterval(interval);
 isProcessing = false,
@@ -43,7 +44,8 @@ isProcessing = false,
   // Import useCurrentTime hook
   // import { useCurrentTime } from './hooks/useCurrentTime';
   
-  // Use the custom hook instead of useState and useEffect
+// Use the custom hook instead of useState and useEffect
+
   const currentTime = useCurrentTime();
 
   return (
