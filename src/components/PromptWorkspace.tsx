@@ -799,7 +799,6 @@ const someVar = someCondition
       )}
     </div>
   );
-
 };
 
 export default PromptWorkspace;
