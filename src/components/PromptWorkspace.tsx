@@ -772,29 +772,31 @@ const someVar = someCondition
       </div>
       
       {/* Output History */}
-      <div className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto bg-black/70 border border-purple-700 rounded p-2 space-y-2 backdrop-blur">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-semibold text-purple-300">Output</span>
-          <Button size="sm" variant="ghost" onClick={handleClearOutputHistory}>
-            Clear
-          </Button>
-        </div>
-        {outputHistory.map((item) => (
-          <div key={item.id} className="border border-purple-700 rounded p-2">
-            <pre className="whitespace-pre-wrap break-words text-sm text-white">
-              {item.content}
-            </pre>
-            <div className="flex justify-end gap-1 mt-1">
-              <Button size="sm" variant="ghost" onClick={() => handleCopyOutput(item)}>
-                Copy
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => handleRemoveOutput(item.id)}>
-                Remove
-              </Button>
-            </div>
+      {outputHistory.length > 0 && (
+        <div className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto bg-black/70 border border-purple-700 rounded p-2 space-y-2 backdrop-blur">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-semibold text-purple-300">Output</span>
+            <Button size="sm" variant="ghost" onClick={handleClearOutputHistory}>
+              Clear
+            </Button>
           </div>
-        ))}
-      </div>
+          {outputHistory.map((item) => (
+            <div key={item.id} className="border border-purple-700 rounded p-2">
+              <pre className="whitespace-pre-wrap break-words text-sm text-white">
+                {item.content}
+              </pre>
+              <div className="flex justify-end gap-1 mt-1">
+                <Button size="sm" variant="ghost" onClick={() => handleCopyOutput(item)}>
+                  Copy
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleRemoveOutput(item.id)}>
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
