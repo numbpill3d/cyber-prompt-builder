@@ -1,4 +1,5 @@
 import React from 'react';
+import React from 'react';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 
@@ -42,6 +43,10 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
       </div>
     </div>
   );
+};
+
+export default EditorPanel;
+
 };
 
 export default EditorPanel;

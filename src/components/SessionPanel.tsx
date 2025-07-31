@@ -1,4 +1,5 @@
 import React from 'react';
+import React from 'react';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -33,6 +34,10 @@ const SessionPanel: React.FC<SessionPanelProps> = ({
       ))}
     </ScrollArea>
   );
+};
+
+export default SessionPanel;
+
 };
 
 export default SessionPanel;

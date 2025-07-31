@@ -1,4 +1,5 @@
 import React from 'react';
+import React from 'react';
 import { Card } from './ui/card';
 
 interface TokenEstimation {
@@ -30,9 +31,29 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis }) => {
         <p className="text-sm text-gray-300">
           Tokens: {analysis.tokenEstimation.count}
         </p>
+        <p className="text-sm text-gray-300">
+          Model: {analysis.tokenEstimation.model}
+        </p>
+        {analysis.tokenEstimation.costEstimate !== undefined && (
+          <p className="text-sm text-gray-300">
+            Estimated Cost: ${analysis.tokenEstimation.costEstimate.toFixed(4)}
+          </p>
+        )}
+        <p className="text-sm text-gray-300">Confidence: {analysis.confidenceScore}</p>
+        <p className="text-sm text-gray-300">Complexity: {analysis.complexity}</p>
+        <p className="text-sm text-gray-300">Prompt Types: {analysis.promptType.join(', ')}</p>
+        <ul className="text-sm text-gray-300 list-disc ml-4">
+          {analysis.suggestedImprovements.map((improvement, idx) => (
+            <li key={idx}>{improvement}</li>
+          ))}
+        </ul>
       </Card>
     </div>
   );
+};
+
+export default AnalysisPanel;
+
 };
 
 export default AnalysisPanel;
