@@ -24,8 +24,8 @@ const SessionPanel: React.FC<SessionPanelProps> = ({
         <Card
           key={session.id}
           onClick={() => onSelectSession(session.id)}
-          className={`p-2 cursor-pointer ${
-            selectedSessionId === session.id ? 'border-purple-500' : ''
+          className={`p-2 cursor-pointer border ${
+            selectedSessionId === session.id ? 'border-purple-500' : 'border-transparent'
           }`}
         >
           {session.name}
