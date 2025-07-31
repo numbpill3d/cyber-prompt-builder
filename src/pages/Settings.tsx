@@ -98,6 +98,7 @@ export default function Settings() {
       toast({ title: 'Key Saved', description: `${provider} API key saved.` });
     } else {
       localStorage.removeItem(`${provider}_api_key`);
+      toast({ title: 'Key Removed', description: `${provider} API key removed.` });
     }
   };
 
