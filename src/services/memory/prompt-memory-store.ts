@@ -70,15 +70,16 @@ getSession(id: string): PromptSession | undefined {
   }
 
   /** Roll back a session to a previous snapshot */
-  rollbackToSnapshot(sessionId: string, snapshotId: string): void {
+  rollbackToSnapshot(sessionId: string, snapshotId: string): boolean {
     const session = this.getSession(sessionId);
-    if (!session) return;
+    if (!session) return false;
 
     const snapshot = session.snapshots.find(s => s.id === snapshotId);
-    if (snapshot) {
-      session.currentSnapshotId = snapshotId;
-      session.updatedAt = Date.now();
-    }
+    if (!snapshot) return false;
+
+    session.currentSnapshotId = snapshotId;
+    session.updatedAt = Date.now();
+    return true;
   }
 }
 
