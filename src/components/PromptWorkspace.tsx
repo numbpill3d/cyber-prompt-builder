@@ -26,13 +26,23 @@ import {
 import PromptEditor from '@/components/PromptEditor';
 import VersionDiff from '@/components/VersionDiff';
 import AutomationPanel from '@/components/AutomationPanel';
-import FloatingDock, { OutputItem } from '@/components/FloatingDock';
 import TokenMetrics from '@/components/TokenMetrics';
 
 import { promptMemoryStore, PromptSession } from '@/services/memory/prompt-memory-store';
 import { promptAnalyzer } from '@/services/analysis/prompt-analyzer';
 import { autoTagger } from '@/services/tagging/auto-tagger';
 import { v4 as uuidv4 } from 'uuid';
+
+interface OutputItem {
+  id: string;
+  content: string;
+  timestamp: number;
+  type: 'code' | 'error';
+  metadata?: {
+    tokens: number;
+    model: string;
+  };
+}
 
 const PromptWorkspace: React.FC = () => {
   // State for the prompt editor
@@ -761,64 +771,36 @@ const someVar = someCondition
         </ResizablePanelGroup>
       </div>
       
-      {/* Floating components */}
-      <FloatingDock
-        items={outputHistory}
-        onClear={handleClearOutputHistory}
-        onCopy={handleCopyOutput}
-        onRemove={handleRemoveOutput}
-      />
+      {/* Output History */}
+      {outputHistory.length > 0 && (
+        <div className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto bg-black/70 border border-purple-700 rounded p-2 space-y-2 backdrop-blur">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-semibold text-purple-300">Output</span>
+            <Button size="sm" variant="ghost" onClick={handleClearOutputHistory}>
+              Clear
+            </Button>
+          </div>
+          {outputHistory.map((item) => (
+            <div key={item.id} className="border border-purple-700 rounded p-2">
+              <pre className="whitespace-pre-wrap break-words text-sm text-white">
+                {item.content}
+              </pre>
+              <div className="flex justify-end gap-1 mt-1">
+                <Button size="sm" variant="ghost" onClick={() => handleCopyOutput(item)}>
+                  Copy
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleRemoveOutput(item.id)}>
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-// Import statements remain unchanged
 
-const PromptWorkspace: React.FC = () => {
-  // State management remains unchanged
-
-  // Helper functions remain unchanged
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
-          <SessionPanel
-            sessions={filteredSessions}
-            selectedSessionId={selectedSessionId}
-            onSelectSession={handleSelectSession}
-            onCreateSession={handleCreateSession}
-            onDeleteSession={handleDeleteSession}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-          <EditorPanel
-            currentPrompt={currentPrompt}
-            selectedSessionId={selectedSessionId}
-            onSavePrompt={handleSavePrompt}
-            onExecute={handleExecute}
-            apiKey={apiKey}
-            setApiKey={setApiKey}
-            onSaveApiKey={handleSaveApiKey}
-          />
-          <AnalysisPanel
-            analysis={analysis}
-            isProcessing={isProcessing}
-            systemLogs={systemLogs}
-          />
-        </ResizablePanelGroup>
-      </div>
-      <FloatingDock
-        items={outputHistory}
-        onClear={handleClearOutputHistory}
-        onCopy={handleCopyOutput}
-        onRemove={handleRemoveOutput}
-      />
-    </div>
-  );
 };
-
-// TODO: Implement SessionPanel component
-// TODO: Implement EditorPanel component
-// TODO: Implement AnalysisPanel component
 
 export default PromptWorkspace;
 
