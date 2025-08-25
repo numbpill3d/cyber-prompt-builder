@@ -18,7 +18,7 @@ interface CyberLayoutProps {
 
 const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
+const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
   useEffect(() => {
     const updateTime = () => {
