@@ -376,7 +376,13 @@ export class SessionManager {
         this.currentSessionId = mostRecent.id;
       }
     } catch (error) {
+this.currentSessionId = mostRecent.id;
+      }
+    } catch (error) {
+      // TODO: Implement a more robust logging system
       console.error('Error loading sessions:', error);
+    }
+  }
     }
   }
 }
