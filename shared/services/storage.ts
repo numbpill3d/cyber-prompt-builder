@@ -13,7 +13,48 @@ class BrowserStorage implements StorageInterface {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(key, value);
     }
+class BrowserStorage implements StorageInterface {
+  getItem(key: string): string | null {
+    try {
+      return typeof localStorage === 'undefined' ? null : localStorage.getItem(key);
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
+      return null;
+    }
   }
+  setItem(key: string, value: string): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Error setting item in localStorage:', error);
+    }
+  }
+  removeItem(key: string): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error('Error removing item from localStorage:', error);
+    }
+  }
+  keys(): string[] {
+    try {
+      if (typeof localStorage === 'undefined') return [];
+      const result: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k) result.push(k);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error accessing localStorage keys:', error);
+      return [];
+    }
+  }
+}
   removeItem(key: string): void {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(key);
