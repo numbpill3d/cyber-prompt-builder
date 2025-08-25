@@ -37,7 +37,17 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+isProcessing = false,
+  logs = []
+}) => {
+  // Import useCurrentTime hook
+  // import { useCurrentTime } from './hooks/useCurrentTime';
+  
+  // Use the custom hook instead of useState and useEffect
+  const currentTime = useCurrentTime();
+
+  return (
+    <div className="space-y-4">
 
   return (
     <div className="space-y-4">
