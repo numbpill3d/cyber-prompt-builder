@@ -135,6 +135,17 @@ function dispatch(action: Action) {
   listeners.forEach((listener) => {
     listener(memoryState);
   });
+let memoryState: State = { toasts: [] };
+
+function dispatch(action: Action) {
+  const prevState = memoryState;
+  memoryState = reducer(memoryState, action);
+  const changedKeys = Object.keys(memoryState).filter(key => memoryState[key] !== prevState[key]);
+  listeners.forEach((listener) => {
+    if (changedKeys.some(key => listener.dependencies.includes(key))) {
+      listener(memoryState);
+    }
+  });
 }
 
 type Toast = Omit<ToasterToast, "id">;
