@@ -34,7 +34,7 @@ export function useIsMobile(): boolean {
   const getMatch = () =>
     typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches
 
-  const [isMobile, setIsMobile] = React.useState(getMatch)
+  const [isMobile, setIsMobile] = React.useState(() => getMatch())
 
   React.useEffect(() => {
     if (typeof window === "undefined") return
