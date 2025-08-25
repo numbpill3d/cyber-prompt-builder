@@ -105,7 +105,14 @@ setCurrentTime(new Date().toLocaleTimeString());
               <div className="flex items-center space-x-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-sm text-gray-400">Online</span>
-                <span className="text-sm text-gray-400">{currentTime}</span>
+<span 
+  className="text-sm text-gray-400"
+  aria-live="polite"
+  aria-atomic="true"
+  role="timer"
+>
+  {currentTime}
+</span>
               </div>
             </div>
           </header>
