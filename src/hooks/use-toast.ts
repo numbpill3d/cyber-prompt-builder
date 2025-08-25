@@ -166,6 +166,42 @@ function toast({ ...props }: Toast) {
     dismiss,
     update,
   };
+type Toast = Omit<ToasterToast, "id">;
+
+function createToast(props: Toast) {
+  const id = genId();
+  return { ...props, id, open: true };
+}
+
+function updateToast(props: ToasterToast) {
+  dispatch({
+    type: "UPDATE_TOAST",
+    toast: props,
+  });
+}
+
+function dismissToast(id: string) {
+  dispatch({ type: "DISMISS_TOAST", toastId: id });
+}
+
+function toast(props: Toast) {
+  const newToast = createToast(props);
+  
+  dispatch({
+    type: "ADD_TOAST",
+    toast: {
+      ...newToast,
+      onOpenChange: (open) => {
+        if (!open) dismissToast(newToast.id);
+      },
+    },
+  });
+
+  return {
+    id: newToast.id,
+    dismiss: () => dismissToast(newToast.id),
+    update: (updatedProps: ToasterToast) => updateToast({ ...updatedProps, id: newToast.id }),
+  };
 }
 
 function useToast() {
