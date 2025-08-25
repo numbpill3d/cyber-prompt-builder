@@ -30,8 +30,6 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
 }) => {
 const currentTime = useCurrentTime();
 
-  return (
-    <div className="space-y-4">
       <Card className="bg-black/30 border-purple-500/10 p-3">
         <h3 className="text-sm font-medium mb-3 flex items-center">
           <Cpu className="h-4 w-4 text-purple-400 mr-2" />
