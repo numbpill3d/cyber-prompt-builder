@@ -84,7 +84,6 @@ isProcessing = false,
             <div className="flex items-center space-x-2">
               <Progress
                 value={confidenceScore}
-                className="w-16 h-1 bg-gray-700"
               />
               <span className="text-xs font-medium">{confidenceScore}%</span>
             </div>
