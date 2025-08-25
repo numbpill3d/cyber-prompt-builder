@@ -70,6 +70,7 @@ const addToRemoveQueue = (toastId: string) => {
 };
 };
 };
+};
 
 function handleAddToast(state, action) {
   // handle add toast
