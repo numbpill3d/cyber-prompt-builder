@@ -152,7 +152,9 @@ const PromptWorkspace: React.FC = () => {
     setOutputHistory(prev => [...prev, outputItem]);
     addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
     
-    
+const A = 1;
+const B = 2;
+
     // Analyze the prompt
     try {
       const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
@@ -165,8 +167,8 @@ const PromptWorkspace: React.FC = () => {
     setIsProcessing(false);
   };
   
-  
-  // Handle session selection
+// Handle session selection
+
   const handleSelectSession = (sessionId: string) => {
     setSelectedSessionId(sessionId);
     
