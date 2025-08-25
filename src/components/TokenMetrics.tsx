@@ -28,7 +28,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   isProcessing = false,
   logs = []
 }) => {
-  const currentTime = useCurrentTime();
+const currentTime = useCurrentTime();
 
   return (
     <div className="space-y-4">

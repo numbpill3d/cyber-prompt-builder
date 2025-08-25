@@ -152,16 +152,6 @@ const PromptWorkspace: React.FC = () => {
     setOutputHistory(prev => [...prev, outputItem]);
     addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
     
-    // Analyze the prompt
-const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
-const someVar = someCondition
-  ? { model: 'gpt-4' }
-  : undefined;
-
-    };
-    
-    setOutputHistory(prev => [...prev, outputItem]);
-    addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
     
     // Analyze the prompt
     try {
@@ -175,30 +165,6 @@ const someVar = someCondition
     setIsProcessing(false);
   };
   
-  // Handle session selection
-  const handleSelectSession = (sessionId: string) => {
-    setSelectedSessionId(sessionId);
-    
-    const session = promptMemoryStore.getSession(sessionId);
-    if (session && session.currentSnapshotId) {
-      const currentSnapshot = session.snapshots.find(s => s.id === session.currentSnapshotId);
-      if (currentSnapshot) {
-        setCurrentPrompt(currentSnapshot.content);
-        
-        // Analyze the prompt
-        try {
-          const promptAnalysis = promptAnalyzer.analyzePrompt(currentSnapshot.content);
-          setAnalysis(promptAnalysis);
-        } catch (error) {
-          console.error('Error analyzing prompt:', error);
-          addSystemLog(`Error analyzing prompt: ${error.message}`);
-        }
-        
-        addSystemLog(`Loaded session: ${session.name}`);
-      }
-    
-    setIsProcessing(false);
-  };
   
   // Handle session selection
   const handleSelectSession = (sessionId: string) => {
@@ -272,28 +238,6 @@ const someVar = someCondition
     }
   };
   
-  // Handle clearing output history
-  const handleClearOutputHistory = () => {
-    setOutputHistory([]);
-    addSystemLog('Cleared output history');
-  };
-  
-  // Handle copying an output item
-  const handleCopyOutput = (item: OutputItem) => {
-    addSystemLog(`Copied output: ${item.id}`);
-  };
-  
-  // Handle removing an output item
-  const handleRemoveOutput = (id: string) => {
-    setOutputHistory(prev => prev.filter(item => item.id !== id));
-    addSystemLog(`Removed output: ${id}`);
-  };
-  
-  // Handle saving API key
-  const handleSaveApiKey = () => {
-    localStorage.setItem('openai_api_key', apiKey);
-    localStorage.removeItem('openai-api-key');
-    addSystemLog('Saved API key');
 // Handle clearing output history
   const handleClearOutputHistory = () => {
     setOutputHistory([]);
