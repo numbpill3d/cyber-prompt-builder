@@ -79,7 +79,13 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
               <Activity className={`h-3 w-3 ${isProcessing ? 'text-green-400' : 'text-gray-400'} mr-2`} />
               <span className="text-xs text-gray-400">Status</span>
             </div>
-            <span className={`text-xs font-medium ${isProcessing ? 'text-green-400' : 'text-gray-400'}`}> 
+<Activity className={`h-3 w-3 ${isProcessing ? 'text-green-400' : 'text-gray-400'} mr-2`} />
+              <span className="text-xs text-gray-400">Status</span>
+            </div>
+            <span className={`text-xs font-medium ${isProcessing ? 'text-green-400' : 'text-gray-400'}`}>
+              {isProcessing ? 'Processing' : 'Idle'}
+            </span>
+          </div>
               {isProcessing ? 'Processing' : 'Idle'}
             </span>
           </div>
