@@ -25,7 +25,12 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
       setCurrentTime(new Date().toLocaleTimeString());
     };
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+setCurrentTime(new Date().toLocaleTimeString());
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
     return () => clearInterval(interval);
   }, []);
 
