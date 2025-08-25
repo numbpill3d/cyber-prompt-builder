@@ -68,7 +68,12 @@ class BrowserStorage implements StorageInterface {
       if (k) result.push(k);
     }
     return result;
+}
+  keys(): string[] {
+    if (typeof localStorage === 'undefined') return [];
+    return Object.keys(localStorage);
   }
+}
 }
 
 import fs from 'fs';
