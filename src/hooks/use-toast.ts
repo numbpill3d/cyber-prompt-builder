@@ -191,7 +191,15 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+React.useEffect(() => {
+  listeners.push(setState);
+  return () => {
+    const index = listeners.indexOf(setState);
+    if (index > -1) {
+      listeners.splice(index, 1);
+    }
+  };
+}, []); // Empty dependency array
 
   return {
     ...state,
