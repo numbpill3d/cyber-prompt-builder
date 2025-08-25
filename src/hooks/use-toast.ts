@@ -69,6 +69,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout);
 };
 };
+};
 
 function handleAddToast(state, action) {
   // handle add toast
