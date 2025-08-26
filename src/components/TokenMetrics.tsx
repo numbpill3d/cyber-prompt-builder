@@ -36,7 +36,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [setCurrentTime]);
 
   return (
     <div className="space-y-4">
