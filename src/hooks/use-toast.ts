@@ -1,4 +1,5 @@
 import * as React from "react";
+import { v4 as uuidv4 } from 'uuid';
 
 import type {
   ToastActionElement,
@@ -21,8 +22,6 @@ const actionTypes = {
   DISMISS_TOAST: "DISMISS_TOAST",
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const;
-
-import { v4 as uuidv4 } from 'uuid';
 
 function genId() {
   return uuidv4();
@@ -68,25 +67,58 @@ const addToRemoveQueue = (toastId: string) => {
   }, TOAST_REMOVE_DELAY);
   toastTimeouts.set(toastId, timeout);
 };
-};
-};
-};
 
-function handleAddToast(state, action) {
-  // handle add toast
-}
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "ADD_TOAST":
+      return {
+        ...state,
+        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+      };
 
-function handleUpdateToast(state, action) {
-  // handle update toast
-}
+    case "UPDATE_TOAST":
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
+      };
 
-// Use these in the main reducer
-switch (action.type) {
-  case 'ADD_TOAST':
-    return handleAddToast(state, action);
-  case 'UPDATE_TOAST':
-    return handleUpdateToast(state, action);
-  // other cases
+    case "DISMISS_TOAST": {
+      const { toastId } = action;
+
+      if (toastId) {
+        addToRemoveQueue(toastId);
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id);
+        });
+      }
+
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t
+        ),
+      };
+    }
+    case "REMOVE_TOAST":
+      if (action.toastId === undefined) {
+        return {
+          ...state,
+          toasts: [],
+        };
+      }
+      return {
+        ...state,
+        toasts: state.toasts.filter((t) => t.id !== action.toastId),
+      };
+  }
 }
 
 const listeners: Array<(state: State) => void> = [];
@@ -98,17 +130,6 @@ function dispatch(action: Action) {
   listeners.forEach((listener) => {
     listener(memoryState);
   });
-let memoryState: State = { toasts: [] };
-
-function dispatch(action: Action) {
-  const prevState = memoryState;
-  memoryState = reducer(memoryState, action);
-  const changedKeys = Object.keys(memoryState).filter(key => memoryState[key] !== prevState[key]);
-  listeners.forEach((listener) => {
-    if (changedKeys.some(key => listener.dependencies.includes(key))) {
-      listener(memoryState);
-    }
-  });
 }
 
 type Toast = Omit<ToasterToast, "id">;
@@ -117,11 +138,9 @@ function toast({ ...props }: Toast) {
   const id = genId();
 
   const update = (props: ToasterToast) => {
-    // Exclude 'id' from props to prevent overwriting the generated id
-    const { id: _ignoredId, ...restProps } = props;
     dispatch({
       type: "UPDATE_TOAST",
-      toast: { ...restProps, id },
+      toast: { ...props, id },
     });
   };
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
@@ -143,42 +162,6 @@ function toast({ ...props }: Toast) {
     dismiss,
     update,
   };
-type Toast = Omit<ToasterToast, "id">;
-
-function createToast(props: Toast) {
-  const id = genId();
-  return { ...props, id, open: true };
-}
-
-function updateToast(props: ToasterToast) {
-  dispatch({
-    type: "UPDATE_TOAST",
-    toast: props,
-  });
-}
-
-function dismissToast(id: string) {
-  dispatch({ type: "DISMISS_TOAST", toastId: id });
-}
-
-function toast(props: Toast) {
-  const newToast = createToast(props);
-  
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...newToast,
-      onOpenChange: (open) => {
-        if (!open) dismissToast(newToast.id);
-      },
-    },
-  });
-
-  return {
-    id: newToast.id,
-    dismiss: () => dismissToast(newToast.id),
-    update: (updatedProps: ToasterToast) => updateToast({ ...updatedProps, id: newToast.id }),
-  };
 }
 
 function useToast() {
@@ -192,15 +175,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-React.useEffect(() => {
-  listeners.push(setState);
-  return () => {
-    const index = listeners.indexOf(setState);
-    if (index > -1) {
-      listeners.splice(index, 1);
-    }
-  };
-}, []); // Empty dependency array
+  }, []);
 
   return {
     ...state,
