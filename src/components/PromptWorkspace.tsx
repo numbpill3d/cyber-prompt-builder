@@ -31,7 +31,10 @@ import TokenMetrics from '@/components/TokenMetrics';
 import { promptMemoryStore, PromptSession } from '@/services/memory/prompt-memory-store';
 import { promptAnalyzer } from '@/services/analysis/prompt-analyzer';
 import { autoTagger } from '@/services/tagging/auto-tagger';
+import { Logger } from '@/services/logging/logger';
 import { v4 as uuidv4 } from 'uuid';
+
+const logger = new Logger('PromptWorkspace');
 
 interface OutputItem {
   id: string;
@@ -151,16 +154,13 @@ const PromptWorkspace: React.FC = () => {
     
     setOutputHistory(prev => [...prev, outputItem]);
     addSystemLog(`Execution completed: ${result.error ? 'Error' : 'Success'}`);
-    
-const A = 1;
-const B = 2;
 
     // Analyze the prompt
     try {
       const promptAnalysis = promptAnalyzer.analyzePrompt(currentPrompt);
       setAnalysis(promptAnalysis);
     } catch (error) {
-      console.error('Error analyzing prompt:', error);
+      logger.error('Error analyzing prompt', { error });
       addSystemLog(`Error analyzing prompt: ${error.message}`);
     }
     
