@@ -16,12 +16,15 @@ import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
+// Get base path from environment or default to root
+const basename = process.env.REACT_APP_PUBLIC_URL || '/';
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <BrowserRouter>
+        <BrowserRouter basename={basename}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/settings" element={<Settings />} />

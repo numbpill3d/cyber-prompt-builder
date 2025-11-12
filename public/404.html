@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cyber Prompt Builder</title>
+  <script>
+    // GitHub Pages SPA redirect solution
+    // This script takes the current URL and redirects to the index.html
+    // with the URL path as a query parameter that the app can use for routing
+
+    const path = window.location.pathname.slice(1);
+    const base = '/cyber-prompt-builder/';
+
+    if (path && path !== base) {
+      window.location.replace(
+        window.location.origin +
+        base +
+        '?redirect=' +
+        encodeURIComponent(path.replace(base, ''))
+      );
+    }
+  </script>
+</head>
+<body>
+  <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+    <h1>Redirecting...</h1>
+    <p>Please wait while we redirect you to the application.</p>
+  </div>
+</body>
+</html>
