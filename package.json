@@ -21,7 +21,10 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:server": "node test-server.js",
-    "predeploy": "npm run build && npm run test:server"
+    "predeploy": "npm run build && npm run test:server",
+    "deploy:firebase": "npm run build && firebase deploy",
+    "deploy:firebase:preview": "npm run build && firebase hosting:channel:deploy preview",
+    "serve:local": "npm run build && npx serve dist"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
