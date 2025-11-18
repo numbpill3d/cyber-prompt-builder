@@ -16,12 +16,16 @@ import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
+// Get the base name from the environment or default to '/'
+// For GitHub Pages, this will be set to the repository name
+const basename = process.env.PUBLIC_URL || '/';
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <BrowserRouter>
+        <BrowserRouter basename={basename}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/settings" element={<Settings />} />
