@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { ScrollArea } from './ui/scroll-area';
@@ -11,6 +11,7 @@ import {
   BarChart3,
   Layers
 } from 'lucide-react';
+import { useCurrentTime } from '../hooks/use-current-time';
 
 interface TokenMetricsProps {
   tokenCount?: number;
@@ -27,16 +28,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   isProcessing = false,
   logs = []
 }) => {
-  const [currentTime, setCurrentTime] = useState(
-    new Date().toLocaleTimeString()
-  );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [setCurrentTime]);
+const currentTime = useCurrentTime();
 
   return (
     <div className="space-y-4">
@@ -83,9 +75,6 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
               <span className="text-xs text-gray-400">Status</span>
             </div>
             <span className={`text-xs font-medium ${isProcessing ? 'text-green-400' : 'text-gray-400'}`}>
-              {isProcessing ? 'Processing' : 'Idle'}
-            </span>
-          </div>
               {isProcessing ? 'Processing' : 'Idle'}
             </span>
           </div>

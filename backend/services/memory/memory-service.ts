@@ -11,6 +11,7 @@ import {
   CollectionOptions,
   MemoryProviderConfig
 } from './memory-types';
+import { getStorage, StorageInterface } from '@shared/services/storage';
 
 // Re-export these types for consumers
 export type { MemoryProviderConfig };
@@ -69,7 +70,8 @@ export interface MemoryService {
  */
 export abstract class BaseMemoryService implements MemoryService {
   protected config: MemoryProviderConfig;
-  
+  protected storage: StorageInterface;
+
   constructor(config: MemoryProviderConfig = {}) {
     this.config = {
       persistencePath: './memory-data',
@@ -77,6 +79,7 @@ export abstract class BaseMemoryService implements MemoryService {
       dimensions: 1536,
       ...config
     };
+    this.storage = getStorage();
   }
   
   // Required implementations
@@ -135,7 +138,7 @@ export abstract class BaseMemoryService implements MemoryService {
     params: Partial<MemorySearchParams> = {}
   ): Promise<MemorySearchResult> {
     // Get embedding for the content
-    const embedding = await this.embedText(content);
+    let embedding = await this.embedText(content);
     
     // Search for similar memories using the embedding
     return this.searchMemories(collection, {
@@ -170,7 +173,7 @@ export abstract class BaseMemoryService implements MemoryService {
    * Clear all memories associated with a session
    */
   async clearSessionMemories(sessionId: string): Promise<boolean> {
-    const memories = await this.getSessionMemories(sessionId);
+    let memories = await this.getSessionMemories(sessionId);
     const collections = new Set(memories.map(m => m.metadata.sessionId));
     
     for (const collection of Array.from(collections)) {
@@ -190,11 +193,14 @@ export abstract class BaseMemoryService implements MemoryService {
    * Export memories from a collection as a JSON string
    */
   async exportMemories(collection: string): Promise<string> {
+    const cached = this.storage.getItem(`memory_${collection}`);
+    if (cached) return cached;
     const result = await this.searchMemories(collection, {
       maxResults: 10000
     });
-    
-    return JSON.stringify(result.entries, null, 2);
+    const data = JSON.stringify(result.entries, null, 2);
+    this.storage.setItem(`memory_${collection}`, data);
+    return data;
   }
   
   /**
@@ -216,6 +222,9 @@ export abstract class BaseMemoryService implements MemoryService {
     } catch (error) {
       console.error('Error importing memories:', error);
       return 0;
+    }
+    finally {
+      this.storage.setItem(`memory_${collection}`, data);
     }
   }
   

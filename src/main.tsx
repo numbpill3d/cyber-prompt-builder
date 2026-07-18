@@ -10,14 +10,16 @@ import { Logger } from './services/logging/logger'
 const logger = new Logger('Main');
 
 // Log environment information
-console.log('Application starting...');
-console.log('Environment:', process.env.REACT_APP_APP_ENVIRONMENT || 'not set');
-console.log('Node Environment:', process.env.NODE_ENV || 'not set');
+logger.info('Application starting');
+logger.info('Environment information', {
+  appEnvironment: process.env.REACT_APP_APP_ENVIRONMENT || 'not set',
+  nodeEnvironment: process.env.NODE_ENV || 'not set'
+});
 
 // Check if we have the root element before trying to initialize services
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  console.error('Root element not found in the DOM');
+  logger.critical('Root element not found in the DOM');
   document.body.innerHTML = `
     <div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
       <h2>Application Error</h2>
@@ -50,7 +52,7 @@ if (!rootElement) {
           );
           logger.info('Application rendered successfully');
         } catch (renderError) {
-          console.error('Failed to render application:', renderError);
+          logger.error('Failed to render application', { error: renderError });
           errorHandler.handleError(renderError as Error, { context: 'application-render' });
 
           rootElement.innerHTML = `
@@ -64,7 +66,7 @@ if (!rootElement) {
       })
       .catch((error) => {
         // Handle initialization errors
-        console.error('Failed to initialize services:', error);
+        logger.error('Failed to initialize services', { error });
         errorHandler.handleError(error, { context: 'application-startup' });
 
         // Render error message in the DOM
@@ -77,7 +79,7 @@ if (!rootElement) {
         `;
       });
   } catch (error) {
-    console.error('Critical error during startup:', error);
+    logger.critical('Critical error during startup', { error });
 
     rootElement.innerHTML = `
       <div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">

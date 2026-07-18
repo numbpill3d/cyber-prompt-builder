@@ -22,8 +22,8 @@ export default function AgentLab() {
     className="text-blue-500 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500"
     aria-label="Navigate back to home page"
   >
-    Ret
-
-    </div>
+    Return to Home
+  </Link>
+</div>
   );
 }

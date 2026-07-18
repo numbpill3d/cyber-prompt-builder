@@ -23,8 +23,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('gemini');
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   // Check which providers are configured
   const getProviderStatus = () => {
     return {
@@ -33,9 +33,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
       claude: !!localStorage.getItem('claude_api_key')
     };
   };
-  
+
   const [providerStatus, setProviderStatus] = useState(getProviderStatus());
-  
+
   useEffect(() => {
     const checkStatus = () => setProviderStatus(getProviderStatus());
     window.addEventListener('storage', checkStatus);
@@ -47,9 +47,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
   }, []);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -210,12 +208,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
     }
 
     const data = await response.json();
-}
-
-    const data = await response.json();
     const text = Array.isArray(data.content) ? data.content.map((contentPart: any) => contentPart.text).join('') : '';
-    return text || 'No response generated';
-  };
     return text || 'No response generated';
   };
 
@@ -254,7 +247,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-cyber-black opacity-60 py-8">
@@ -330,6 +323,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onCodeGenerated }) => {
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 

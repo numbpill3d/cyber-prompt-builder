@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card } from './ui/card';
@@ -18,6 +18,21 @@ interface CyberLayoutProps {
 
 const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    };
+    updateTime();
+setCurrentTime(new Date().toLocaleTimeString());
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -90,6 +105,14 @@ const CyberLayout: React.FC<CyberLayoutProps> = ({ children }) => {
               <div className="flex items-center space-x-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-sm text-gray-400">Online</span>
+<span 
+  className="text-sm text-gray-400"
+  aria-live="polite"
+  aria-atomic="true"
+  role="timer"
+>
+  {currentTime}
+</span>
               </div>
             </div>
           </header>
