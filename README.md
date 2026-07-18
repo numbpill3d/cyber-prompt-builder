@@ -43,6 +43,32 @@ CyberPromptBuilder seamlessly integrates with multiple AI service providers:
 - **OpenAI**: Structured for chat completion endpoints
 - **Gemini**: Formatted for Google's Gemini API
 
+## 🚀 Quick Start
+
+### Option 1: Deploy to Firebase (Recommended - 5 minutes)
+```bash
+npm install
+npm run build
+firebase login
+firebase deploy
+```
+**📖 Detailed guide:** [FIREBASE_QUICKSTART.md](./FIREBASE_QUICKSTART.md)
+
+### Option 2: Local Development
+```bash
+npm install
+# Create .env.local with your API keys (see .env.example)
+npm run dev
+```
+Open http://localhost:8080
+
+### Option 3: Deploy to GitHub Pages
+Push to main branch and it will auto-deploy via GitHub Actions!
+
+**📚 Full deployment options:** [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+---
+
 ## Getting Started
 
 ### Production Deployment

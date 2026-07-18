@@ -340,7 +340,7 @@ export class ChromaMemoryProvider extends BaseMemoryService {
     if (!this.client) throw new Error('ChromaMemoryProvider not initialized');
     
     try {
-      const collection = await this.client.createCollection({
+      let collection = await this.client.createCollection({
         name: options.name,
         metadata: options.metadata
       });
@@ -421,15 +421,19 @@ export class ChromaMemoryProvider extends BaseMemoryService {
     if (!this.client) await this.initialize();
     if (!this.client) throw new Error('ChromaMemoryProvider not initialized');
     
+    let chromaCollection: ChromaCollection | null = null;
     try {
-      // Get the collection
-      let chromaCollection: ChromaCollection;
+      // Get or create the collection
       try {
         chromaCollection = await this.client.getCollection({ name: collection });
-      } catch (error) {
+      } catch (collectionError) {
         // Collection doesn't exist, create it
         await this.createCollection({ name: collection });
         chromaCollection = await this.client.getCollection({ name: collection });
+      }
+
+      if (!chromaCollection) {
+        throw new Error(`Failed to get or create collection ${collection}`);
       }
       
       // Generate embedding for the content
@@ -464,6 +468,7 @@ export class ChromaMemoryProvider extends BaseMemoryService {
       return entry;
     } catch (error) {
       console.error(`Error adding memory to collection ${collection}:`, error);
+      // Re-throw the error after logging
       throw error;
     }
   }
@@ -485,7 +490,7 @@ export class ChromaMemoryProvider extends BaseMemoryService {
       }
       
       // Get the memory entry
-      const result = await chromaCollection.get({ ids: [id] });
+      let result = await chromaCollection.get({ ids: [id] });
       
       if (result.ids.length === 0) return null;
       
@@ -640,29 +645,50 @@ export class ChromaMemoryProvider extends BaseMemoryService {
       
       // Semantic search
       if (params.query) {
-        // Convert query to embedding
-        const queryEmbedding = await this.embedText(params.query);
-        
-        // Search by vector similarity
-        results = await chromaCollection.query({
-          queryEmbeddings: [queryEmbedding],
-          nResults,
-          where: Object.keys(where).length > 0 ? where : undefined
-        });
+        try {
+          // Convert query to embedding - using let to allow reassignment in error handling
+          let queryEmbedding = await this.embedText(params.query);
+          
+          // Search by vector similarity
+          results = await chromaCollection.query({
+            queryEmbeddings: [queryEmbedding],
+            nResults,
+            where: Object.keys(where).length > 0 ? where : undefined
+          });
+        } catch (error) {
+          console.error('Error during semantic search:', error);
+          // Fallback to metadata-only search in case of embedding/query errors
+          results = {
+            ids: [[]],
+            distances: [[]],
+            metadatas: [[]],
+            documents: [[]]
+          };
+        }
       } else {
-        // Metadata-only search
-        const getResults = await chromaCollection.get({
-          where: Object.keys(where).length > 0 ? where : undefined,
-          limit: nResults
-        });
-        
-        // Format to match query results
-        results = {
-          ids: [getResults.ids],
-          distances: [getResults.ids.map(() => 0)], // No distance for metadata search
-          metadatas: [getResults.metadatas],
-          documents: [getResults.documents]
-        };
+        try {
+          // Metadata-only search - using let to allow reassignment in error handling
+          let getResults = await chromaCollection.get({
+            where: Object.keys(where).length > 0 ? where : undefined,
+            limit: nResults
+          });
+          
+          // Format to match query results
+          results = {
+            ids: [getResults.ids],
+            distances: [getResults.ids.map(() => 0)], // No distance for metadata search
+            metadatas: [getResults.metadatas],
+            documents: [getResults.documents]
+          };
+        } catch (error) {
+          console.error('Error during metadata search:', error);
+          // Return empty results in case of error
+          results = {
+            ids: [[]],
+            distances: [[]],
+            metadatas: [[]],
+            documents: [[]]
+          };
       }
       
       // Convert to MemoryEntry objects
@@ -698,7 +724,7 @@ export class ChromaMemoryProvider extends BaseMemoryService {
    * Generate an embedding for text
    */
   async embedText(text: string): Promise<number[]> {
-    const embeddings = await this.embedder.generate([text]);
+    let embeddings = await this.embedder.generate([text]);
     return embeddings[0];
   }
   

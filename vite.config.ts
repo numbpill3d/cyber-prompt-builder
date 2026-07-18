@@ -7,7 +7,18 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current directory.
   // Load all environment variables with REACT_APP_ prefix
-  const env = loadEnv(mode, process.cwd(), 'REACT_APP_');
+  const fileEnv = loadEnv(mode, process.cwd(), 'REACT_APP_');
+
+  // Also load from system environment variables (for Render deployment)
+  const systemEnv: Record<string, string> = {};
+  Object.keys(process.env).forEach(key => {
+    if (key.startsWith('REACT_APP_')) {
+      systemEnv[key] = process.env[key] || '';
+    }
+  });
+
+  // Merge with system environment variables taking precedence
+  const env = { ...fileEnv, ...systemEnv };
 
   // Log loaded environment variables (excluding sensitive ones)
   console.log('Loaded environment variables:');

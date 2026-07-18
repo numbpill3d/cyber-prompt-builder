@@ -9,6 +9,83 @@ import { toast } from '@/hooks/use-toast';
 
 type ThemeOption = 'system' | 'light' | 'dark';
 
+interface APIKeyInputProps {
+  provider: 'openai' | 'gemini' | 'claude';
+  apiKey: string;
+  setApiKey: (key: string) => void;
+  testKey: () => void;
+  saveKey: () => void;
+  validating: boolean;
+}
+
+const APIKeyInput: React.FC<APIKeyInputProps> = ({
+  provider,
+  apiKey,
+  setApiKey,
+  testKey,
+  saveKey,
+  validating
+}) => {
+  const providerLabels = {
+    openai: 'OpenAI',
+    gemini: 'Google Gemini',
+    claude: 'Anthropic Claude'
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={provider}>{providerLabels[provider]} API Key</Label>
+      <div className="flex gap-2">
+        <Input
+          id={provider}
+          type="password"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          placeholder={`Enter your ${providerLabels[provider]} API key`}
+          className="flex-1"
+        />
+        <Button
+          onClick={testKey}
+          disabled={validating || !apiKey.trim()}
+          variant="outline"
+        >
+          {validating ? 'Testing...' : 'Test'}
+        </Button>
+        <Button
+          onClick={saveKey}
+          disabled={!apiKey.trim()}
+        >
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+interface ThemeSelectorProps {
+  theme: ThemeOption;
+  handleThemeChange: (theme: ThemeOption) => void;
+}
+
+const ThemeSelector: React.FC<ThemeSelectorProps> = ({ theme, handleThemeChange }) => {
+  return (
+    <div className="space-y-2">
+      <Label>Theme</Label>
+      <div className="flex gap-2">
+        {(['system', 'light', 'dark'] as ThemeOption[]).map((option) => (
+          <Button
+            key={option}
+            variant={theme === option ? 'default' : 'outline'}
+            onClick={() => handleThemeChange(option)}
+            className="capitalize"
+          >
+            {option}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function Settings() {
   const [openaiKey, setOpenaiKey] = useState('');
@@ -25,90 +102,40 @@ export default function Settings() {
   useEffect(() => {
     setOpenaiKey(localStorage.getItem('openai_api_key') || '');
     setGeminiKey(localStorage.getItem('gemini_api_key') || '');
-// Load stored settings on mount
-  useEffect(() => {
-    try {
-      setOpenaiKey(localStorage.getItem('openai_api_key') || '');
-      setGeminiKey(localStorage.getItem('gemini_api_key') || '');
-      setClaudeKey(localStorage.getItem('claude_api_key') || '');
-        if (!root) return;
-  
-        // Remove existing listener
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  
-        if (value === 'system') {
-          const prefersDark = mediaQuery.matches;
-          root.classList.toggle('dark', prefersDark);
-          mediaQuery.addEventListener('change', handleSystemThemeChange);
-        } else {
-          root.classList.toggle('dark', value === 'dark');
-        }
-      };
-
-      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-        if (theme === 'system') {
-          document.body.classList.toggle('dark', e.matches);
-        }
-
-  const applyTheme = (value: ThemeOption) => {
-    const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
-    setTheme(storedTheme);
-// Load stored settings on mount
-  useEffect(() => {
-    setOpenaiKey(localStorage.getItem('openai_api_key') || '');
-    setGeminiKey(localStorage.getItem('gemini_api_key') || '');
     setClaudeKey(localStorage.getItem('claude_api_key') || '');
     const storedTheme = (localStorage.getItem('theme_preference') as ThemeOption) || 'system';
     setTheme(storedTheme);
   }, []);
 
-      if (key) {
-        // Use a simple encryption or consider a more robust solution
-        const encryptedKey = btoa(key); // Basic encoding, consider stronger encryption
-        localStorage.setItem(`${provider}_api_key`, encryptedKey);
-        toast({ title: 'Key Saved', description: `${provider} API key saved.` });
-  }, [theme]);
-
-  const applyTheme = (value: ThemeOption) => {
+  // Apply theme when it changes
+  useEffect(() => {
     const root = document.body;
     if (!root) return;
-    if (value === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', prefersDark);
-    } else {
-      root.classList.toggle('dark', value === 'dark');
-    }
-  };
-const testKeyFormat = async (provider: 'gemini' | 'claude') => {
-  setValidating(v => ({ ...v, [provider]: true }));
-  try {
-    const keyMap = { gemini: geminiKey, claude: claudeKey };
-    const key = keyMap[provider];
-    const valid = validateKeyFormat(key, provider);
-    toast({
-      title: valid ? 'API Key Looks Valid' : 'Invalid API Key',
-      description: valid
-        ? `${provider} key format appears correct.`
-        : `Please check your ${provider} API key.`,
-      variant: valid ? undefined : 'destructive'
-    });
-  } finally {
-    setValidating(v => ({ ...v, [provider]: false }));
-  }
-};
-      root.classList.toggle('dark', prefersDark);
-    } else {
-      root.classList.toggle('dark', value === 'dark');
-    }
-  };
 
-  const handleThemeChange = (value: ThemeOption) => {
-    setTheme(value);
-    localStorage.setItem('theme_preference', value);
-      id="openai"
-      type="password"
-      value={openaiKey}
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      if (theme === 'system') {
+        root.classList.toggle('dark', e.matches);
+      }
+    };
+
+    // Remove existing listener
+    mediaQuery.removeEventListener('change', handleSystemThemeChange);
+
+    if (theme === 'system') {
+      const prefersDark = mediaQuery.matches;
+      root.classList.toggle('dark', prefersDark);
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else {
+      root.classList.toggle('dark', theme === 'dark');
+    }
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
+  }, [theme]);
+
   const saveKey = (provider: 'openai' | 'gemini' | 'claude') => {
     const keyMap = { openai: openaiKey, gemini: geminiKey, claude: claudeKey };
     const key = keyMap[provider].trim();
@@ -123,13 +150,22 @@ const testKeyFormat = async (provider: 'gemini' | 'claude') => {
 
   const testOpenAI = async () => {
     setValidating(v => ({ ...v, openai: true }));
-    const valid = await openAIService.validateApiKey(openaiKey);
-    setValidating(v => ({ ...v, openai: false }));
-    toast({
-      title: valid ? 'API Key Valid' : 'Invalid API Key',
-      description: valid ? 'OpenAI key works correctly.' : 'Please check your OpenAI key.',
-      variant: valid ? undefined : 'destructive'
-    });
+    try {
+      const valid = await openAIService.validateApiKey(openaiKey);
+      toast({
+        title: valid ? 'API Key Valid' : 'Invalid API Key',
+        description: valid ? 'OpenAI key works correctly.' : 'Please check your OpenAI key.',
+        variant: valid ? undefined : 'destructive'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error Testing Key',
+        description: 'Failed to test OpenAI key.',
+        variant: 'destructive'
+      });
+    } finally {
+      setValidating(v => ({ ...v, openai: false }));
+    }
   };
 
   const testKeyFormat = (provider: 'gemini' | 'claude') => {
@@ -147,48 +183,49 @@ const testKeyFormat = async (provider: 'gemini' | 'claude') => {
     });
   };
 
+  const handleThemeChange = (value: ThemeOption) => {
+    setTheme(value);
+    localStorage.setItem('theme_preference', value);
+  };
+
   return (
-return (
-  <div className="container mx-auto px-4 py-8 space-y-8">
-    <h1 className="text-2xl font-bold mb-4">Settings</h1>
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
-    <APIKeyInput
-      provider="openai"
-      apiKey={openaiKey}
-      setApiKey={setOpenaiKey}
-      testKey={testOpenAI}
-      saveKey={saveKey}
-      validating={validating.openai}
-    />
+      <APIKeyInput
+        provider="openai"
+        apiKey={openaiKey}
+        setApiKey={setOpenaiKey}
+        testKey={testOpenAI}
+        saveKey={() => saveKey('openai')}
+        validating={validating.openai}
+      />
 
-    <APIKeyInput
-      provider="gemini"
-      apiKey={geminiKey}
-      setApiKey={setGeminiKey}
-      testKey={() => testKeyFormat('gemini')}
-      saveKey={saveKey}
-      validating={validating.gemini}
-    />
+      <APIKeyInput
+        provider="gemini"
+        apiKey={geminiKey}
+        setApiKey={setGeminiKey}
+        testKey={() => testKeyFormat('gemini')}
+        saveKey={() => saveKey('gemini')}
+        validating={validating.gemini}
+      />
 
-    <APIKeyInput
-      provider="claude"
-      apiKey={claudeKey}
-      setApiKey={setClaudeKey}
-      testKey={() => testKeyFormat('claude')}
-      saveKey={saveKey}
-      validating={validating.claude}
-    />
+      <APIKeyInput
+        provider="claude"
+        apiKey={claudeKey}
+        setApiKey={setClaudeKey}
+        testKey={() => testKeyFormat('claude')}
+        saveKey={() => saveKey('claude')}
+        validating={validating.claude}
+      />
 
-    <ThemeSelector theme={theme} handleThemeChange={handleThemeChange} />
+      <ThemeSelector theme={theme} handleThemeChange={handleThemeChange} />
 
-    <div>
-      <Link to="/" className="text-blue-500 hover:text-blue-700 underline">
-        Return to Home
-      </Link>
-    </div>
-  </div>
-);
-
+      <div>
+        <Link to="/" className="text-blue-500 hover:text-blue-700 underline">
+          Return to Home
+        </Link>
+      </div>
     </div>
   );
 }
