@@ -28,7 +28,7 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
   isProcessing = false,
   logs = []
 }) => {
-  const currentTime = useCurrentTime();
+const currentTime = useCurrentTime();
 
   return (
     <div className="space-y-4">
@@ -69,6 +69,9 @@ const TokenMetrics: React.FC<TokenMetricsProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Activity className={`h-3 w-3 ${isProcessing ? 'text-green-400' : 'text-gray-400'} mr-2`} />
+              <span className="text-xs text-gray-400">Status</span>
+            </div>
+<Activity className={`h-3 w-3 ${isProcessing ? 'text-green-400' : 'text-gray-400'} mr-2`} />
               <span className="text-xs text-gray-400">Status</span>
             </div>
             <span className={`text-xs font-medium ${isProcessing ? 'text-green-400' : 'text-gray-400'}`}>
