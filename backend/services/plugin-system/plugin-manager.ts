@@ -263,7 +263,7 @@ export class PluginManager {
       // In a real implementation, we would validate against inputSchema
       
       // Execute the tool
-      const result = await plugin.execute(input);
+      let result = await plugin.execute(input);
       
       // Validate output
       // In a real implementation, we would validate against outputSchema
