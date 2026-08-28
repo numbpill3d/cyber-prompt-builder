@@ -94,6 +94,13 @@ export class AutoTagger {
   }
 
   /**
+   * Get all supported tag category names
+   */
+  getAllCategories(): string[] {
+    return Object.keys(this.tagCategories);
+  }
+
+  /**
    * Get suggested tags based on content analysis
    */
   getSuggestedTags(content: string): string[] {

@@ -3,41 +3,43 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+const CLIENT_ENV_KEYS = [
+  'REACT_APP_APP_ENVIRONMENT',
+  'REACT_APP_APP_DEBUG',
+  'REACT_APP_PROVIDERS_DEFAULT_PROVIDER',
+  'REACT_APP_AGENT_MAX_ITERATIONS',
+  'REACT_APP_AGENT_ENABLE_TASK_BREAKDOWN',
+  'REACT_APP_AGENT_ENABLE_ITERATION',
+  'REACT_APP_AGENT_ENABLE_CONTEXT_MEMORY',
+  'REACT_APP_PROMPT_BUILDER_MAX_TOKENS',
+  'REACT_APP_PROMPT_BUILDER_TEMPERATURE',
+  'REACT_APP_TTS_ENABLED',
+  'REACT_APP_MEMORY_DB_ENDPOINT',
+  'REACT_APP_MEMORY_COLLECTION_NAME',
+  'REACT_APP_LOGGING_LEVEL',
+  'REACT_APP_LOGGING_ENABLE_LOCAL_STORAGE',
+  'REACT_APP_PUBLIC_URL',
+] as const;
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load env file based on `mode` in the current directory.
-  // Load all environment variables with REACT_APP_ prefix
   const fileEnv = loadEnv(mode, process.cwd(), 'REACT_APP_');
+  const mergedEnv = { ...fileEnv, ...process.env };
+  const env = Object.fromEntries(
+    CLIENT_ENV_KEYS.flatMap((key) => {
+      const value = mergedEnv[key];
+      return typeof value === 'string' ? [[key, value]] : [];
+    })
+  ) as Record<string, string>;
 
-  // Also load from system environment variables (for Render deployment)
-  const systemEnv: Record<string, string> = {};
-  Object.keys(process.env).forEach(key => {
-    if (key.startsWith('REACT_APP_')) {
-      systemEnv[key] = process.env[key] || '';
-    }
-  });
-
-  // Merge with system environment variables taking precedence
-  const env = { ...fileEnv, ...systemEnv };
-
-  // Log loaded environment variables (excluding sensitive ones)
-  console.log('Loaded environment variables:');
-  Object.keys(env).forEach(key => {
-    if (!key.includes('KEY') && !key.includes('SECRET') && !key.includes('TOKEN')) {
-      console.log(`  ${key}: ${env[key]}`);
-    } else {
-      console.log(`  ${key}: [REDACTED]`);
-    }
+  console.log('Loaded public environment variables:');
+  Object.entries(env).forEach(([key, value]) => {
+    console.log(`  ${key}: ${value}`);
   });
 
   // Get the base URL from environment variables or use '/' as default
   const base = env.REACT_APP_PUBLIC_URL || '/';
   console.log(`Using base URL: ${base}`);
-
-  // Stringify all env values for define
-  const stringifiedEnv = Object.fromEntries(
-    Object.entries(env).map(([k, v]) => [k, JSON.stringify(v)])
-  );
 
   return {
     base,
@@ -51,17 +53,18 @@ export default defineConfig(({ mode }) => {
     ].filter(Boolean),
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src"),
-        "@frontend": path.resolve(__dirname, "./frontend"),
-        "@backend": path.resolve(__dirname, "./backend"),
-        "@shared": path.resolve(__dirname, "./shared"),
+        "@": path.resolve(import.meta.dirname, "./src"),
+        "@frontend": path.resolve(import.meta.dirname, "./frontend"),
+        "@backend": path.resolve(import.meta.dirname, "./backend"),
+        "@shared": path.resolve(import.meta.dirname, "./shared"),
       },
     },
     define: {
-      'process.env': {
-        ...stringifiedEnv,
-        PUBLIC_URL: JSON.stringify(base)
-      }
+      'process.env': JSON.stringify({
+        ...env,
+        NODE_ENV: mode === 'production' ? 'production' : 'development',
+        PUBLIC_URL: base,
+      }),
     },
     build: {
       outDir: 'dist',
@@ -69,26 +72,18 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: [
-              'react',
-              'react-dom',
-              'react-router-dom',
-              '@tanstack/react-query'
-            ],
-            ui: [
-              '@radix-ui/react-accordion',
-              '@radix-ui/react-alert-dialog',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-label',
-              '@radix-ui/react-popover',
-              '@radix-ui/react-select',
-              '@radix-ui/react-slot',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-toast',
-              '@radix-ui/react-tooltip'
-            ]
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return;
+
+            if (
+              id.includes('@radix-ui') ||
+              id.includes('lucide-react') ||
+              id.includes('react-resizable-panels')
+            ) {
+              return 'ui';
+            }
+
+            return 'vendor';
           }
         }
       }
