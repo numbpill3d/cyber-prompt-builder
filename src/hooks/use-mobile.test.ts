@@ -1,16 +1,17 @@
 import { renderHook } from '@testing-library/react';
-import { useMobile, useIsMobile } from './use-mobile';
+import { describe, expect, it } from 'vitest';
+import { useIsMobile, useMobile } from './use-mobile';
 
-describe('useMobile', () => {
-  it('should return false by default', () => {
+describe('mobile viewport hooks', () => {
+  it('returns the legacy object shape from useMobile', () => {
     const { result } = renderHook(() => useMobile());
-    expect(result.current).toBe(false);
-  });
-});
 
-describe('useIsMobile', () => {
-  it('should return false by default', () => {
+    expect(result.current).toEqual({ isMobile: false });
+  });
+
+  it('returns a boolean from useIsMobile', () => {
     const { result } = renderHook(() => useIsMobile());
+
     expect(result.current).toBe(false);
   });
 });

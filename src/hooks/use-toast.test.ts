@@ -1,73 +1,34 @@
-import { renderHook, act } from '@testing-library/react';
-import { useToast, toast } from './use-toast';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { toast, useToast } from './use-toast';
 
 describe('useToast', () => {
-  it('provides a toast function and list', () => {
-    const { result } = renderHook(() => useToast());
-    expect(typeof result.current.toast).toBe('function');
-    expect(Array.isArray(result.current.toasts)).toBe(true);
-  });
-
-  it('calls console.log when toast is invoked', () => {
-import { renderHook, act } from '@testing-library/react';
-import { useToast, toast } from './use-toast';
-
-// Helper function to mock console.log
-const mockConsoleLog = () => {
-  return vi.spyOn(console, 'log').mockImplementation(() => {});
-};
-
-describe('useToast', () => {
-  let spy;
-
-  beforeEach(() => {
-    spy = mockConsoleLog();
-  });
-
   afterEach(() => {
-    spy.mockRestore();
+    const { result, unmount } = renderHook(() => useToast());
+    act(() => result.current.dismiss());
+    unmount();
   });
 
-  it('provides a toast function and list', () => {
-    const { result } = renderHook(() => useToast());
-    expect(typeof result.current.toast).toBe('function');
-    expect(Array.isArray(result.current.toasts)).toBe(true);
-  });
-
-  it('calls console.log when toast is invoked', () => {
+  it('provides toast controls and an initially empty list', () => {
     const { result } = renderHook(() => useToast());
 
-    act(() => {
-      result.current.toast('hello');
-    });
-
-    expect(spy).toHaveBeenCalledWith('Toast:', 'hello');
+    expect(result.current.toast).toBe(toast);
+    expect(result.current.dismiss).toBeTypeOf('function');
+    expect(result.current.toasts).toEqual([]);
   });
-});
 
-describe('toast helper', () => {
-  it('logs to console', () => {
-    const spy = mockConsoleLog();
-    toast('hi');
-    expect(spy).toHaveBeenCalledWith('Toast:', 'hi');
-    spy.mockRestore();
-  });
+  it('adds a toast to subscribed consumers', () => {
     const { result } = renderHook(() => useToast());
 
     act(() => {
-      result.current.toast('hello');
+      toast({ title: 'Saved', description: 'Prompt updated' });
     });
 
-    expect(spy).toHaveBeenCalledWith('Toast:', 'hello');
-    spy.mockRestore();
-  });
-});
-
-describe('toast helper', () => {
-  it('logs to console', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    toast('hi');
-    expect(spy).toHaveBeenCalledWith('Toast:', 'hi');
-    spy.mockRestore();
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0]).toMatchObject({
+      title: 'Saved',
+      description: 'Prompt updated',
+      open: true,
+    });
   });
 });
